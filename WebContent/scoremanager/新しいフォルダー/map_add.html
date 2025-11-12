@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="ja"><head>
+<meta charset="UTF-8"><title>校内図追加</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="styles.css" /></head><body>
+<div class="top-bar">
+  <div class="nav-left">
+    <a href="index.html"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
+    <div class="system-title">文化祭システム</div>
+  <div class="nav-center" id="navCenter"></div>
+
+  </div>
+  <div class="nav-right">ようこそ</div>
+</div>
+<div class="wrap">
+  <div class="title">校内図追加</div>
+  <div class="card">
+    <label class="label">名称</label><input class="input" id="name"><label class="label" style="margin-top:10px;">画像</label><input type="file" id="img" accept="image/*" class="input"><div style="margin-top:8px;"><img id="preview" style="max-width:320px; max-height:200px; border-radius:10px; display:none;"></div>
+    <div style="margin-top:10px;">
+      <button class="btn btn-primary" onclick="add()">追加</button>
+      <a class="btn btn-ghost" href="map_list.html">戻る</a>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="logoutModal">
+  <div class="modal">
+    <div>ログアウトしますか？</div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confirmLogout()">はい</button>
+      <button class="btn btn-ghost" onclick="closeLogout()">いいえ</button>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script>
+requireAuth(); fillWelcome(); renderNav(); renderNav();
+function add(){
+  const arr=getMaps();
+  const file=img.files[0];
+  if(!name.value.trim()) return alert('名称を入力してください');
+  if(!file){ arr.push({id:uid('m'), name:name.value.trim(), img:''}); saveMaps(arr); return location.href='map_list.html'; }
+  const reader=new FileReader();
+  reader.onload=()=>{ arr.push({id:uid('m'), name:name.value.trim(), img:reader.result}); saveMaps(arr); location.href='map_list.html'; };
+  reader.readAsDataURL(file);
+}
+img.addEventListener('change', ()=>{
+  const f=img.files[0]; if(!f){ preview.style.display='none'; return; }
+  const r=new FileReader(); r.onload=()=>{ preview.src=r.result; preview.style.display='block'; }; r.readAsDataURL(f);
+});); saveMaps(arr); location.href='map_list.html'; }
+</script>
+</body></html>
