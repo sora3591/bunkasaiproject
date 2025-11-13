@@ -1,7 +1,7 @@
 
 const STORAGE_USER='bk_user', STORAGE_USERS='bk_users', STORAGE_PROPOSALS='bk_proposals', STORAGE_SURVEYS='bk_surveys', STORAGE_MAPS='bk_maps';
 function setUserSession(user){ localStorage.setItem(STORAGE_USER, JSON.stringify(user)); }
-function getUserSession(){ try{ return JSON.parse(localStorage.getItem(STORAGE_USER)||'null'); } catch { return null; } }
+function getUserSession(){ try{ return JSON.parse(localStorage.getItem(STORAGE_USER)||'null'); } catch(e) { return null; } }
 function clearUserSession(){ localStorage.removeItem(STORAGE_USER); }
 function requireAuth(){ const u=getUserSession(); if(!u){ location.href='login.html'; return null; } return u; }
 function requireRole(r){ const u=requireAuth(); if(!u)return null; if(!r.includes(u.role)){ location.href='index.html'; return null; } return u; }
@@ -61,8 +61,8 @@ function renderNav(){
     ['survey_list.html','アンケート'],
     ['survey_admin.html','アンケート作成'],
     ['map_list.html','校内図'],
-    
-    
+
+
   ];
   const itemsStudent = [
     ['kikaku_list.html','企画一覧'],
