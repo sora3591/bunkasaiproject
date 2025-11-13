@@ -2,7 +2,9 @@
 <!DOCTYPE html><html lang="ja"><head>
 <meta charset="UTF-8"><title>文化祭システム - ホーム</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="styles.css" /></head><body>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
+</head>
+<body>
 <div class="top-bar">
   <div class="nav-left">
     <a href="index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
@@ -35,6 +37,9 @@
     </div>
   </div>
 </div>
+
+
+
 <script src="app.js"></script>
 <script>requireAuth(); fillWelcome(); renderNav(); renderNav();</script>
 </body></html>
