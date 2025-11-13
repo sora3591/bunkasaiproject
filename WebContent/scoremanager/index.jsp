@@ -144,7 +144,7 @@
     <!-- 中央ナビ（管理者 or 学生） -->
     <div class="center nav">
       <% if ("admin".equals(role)) { %>
-        <a href="kikaku_list.jsp">企画一覧</a>
+        <a href="main/kikaku_list.jsp">企画一覧</a>
         <a href="users_list.jsp">ユーザー一覧</a>
         <a href="survey_list.jsp">アンケート</a>
         <a href="survey_admin.jsp">アンケート作成</a>
