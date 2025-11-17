@@ -1,11 +1,22 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page isELIgnored="false" %>
 <%
-  // =========================
-  //  セッション上のロール判定
-  //  ※ 実環境では LoginAction 等で session.setAttribute("userRole", "admin"/"student")
-  // =========================
+  // セッション上のロール判定
   String role = (String)session.getAttribute("userRole");
-  if (role == null) role = "admin"; // デモのため未ログイン時は管理者表示
+  if (role == null) {
+    // ロール情報がない場合、セッションからユーザー情報を確認
+    Object userObj = session.getAttribute("user");
+    if (userObj != null) {
+      bean.User user = (bean.User) userObj;
+      role = user.getRole();
+      session.setAttribute("userRole", role);
+    } else {
+      // ログインページへリダイレクト
+      response.sendRedirect(request.getContextPath() + "/scoremanager/main/login.jsp");
+      return;
+    }
+  }
+
   String welcome = "管理者さん、ようこそ";
   if ("student".equals(role)) welcome = "学生さん、ようこそ";
 %>
@@ -17,17 +28,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
-  /* =========================
-     カラートークン
-     ========================= */
   :root{
-    --bg:#eef2f8;           /* 背景の薄いブルー */
-    --text:#111;            /* 文字色 */
-    --border:#e5e7eb;       /* 境界線 */
-    --white:#fff;           /* 白 */
-    --primary:#1d8cf8;      /* 主色（リンク/アクセント）*/
-    --shadow:0 6px 16px rgba(0,0,0,.07); /* ソフトな影 */
-    --grad:linear-gradient(135deg,#3fa9ff,#0078d7); /* タイトル用グラデ */
+    --bg:#eef2f8;
+    --text:#111;
+    --border:#e5e7eb;
+    --white:#fff;
+    --primary:#1d8cf8;
+    --shadow:0 6px 16px rgba(0,0,0,.07);
+    --grad:linear-gradient(135deg,#3fa9ff,#0078d7);
   }
 
   *{ box-sizing:border-box; }
@@ -40,9 +48,6 @@
     display:flex; flex-direction:column; align-items:center;
   }
 
-  /* =========================
-     トップナビ（磨りガラス + グラデ文字 + ホバーアニメ）
-     ========================= */
   .topbar{
     width:100%; max-width:1200px; height:78px;
     display:flex; align-items:center; justify-content:space-between;
@@ -68,7 +73,7 @@
     font-size:24px; font-weight:800; letter-spacing:.03em;
     background:var(--grad);
     -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent; /* グラデ文字 */
+    -webkit-text-fill-color:transparent;
   }
 
   .center{ display:flex; align-items:center; gap:28px; font-weight:700; }
@@ -84,15 +89,11 @@
   .nav a:hover::after{ width:100%; }
 
   .right{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-weight:700; }
-  .logout{ color:var(--primary); text-decoration:none; }
+  .logout{ color:var(--primary); text-decoration:none; cursor:pointer; }
   .logout:hover{ text-decoration:underline; }
 
-  /* =========================
-     メインセクション（中央寄せ）
-     ========================= */
   .wrap{ width:100%; max-width:1200px; padding:28px 24px 56px; display:flex; flex-direction:column; align-items:center; }
 
-  /* 大きな丸角ピル（メイン画像）/ 小ピル（サムネ） */
   .hero, .thumb{
     width:70vw; max-width:980px; min-height:54px;
     background:#eef1f6; border:1px solid var(--border); border-radius:999px;
@@ -102,7 +103,6 @@
   .thumbs{ display:flex; gap:32px; margin-top:22px; }
   .thumb{ width:28vw; max-width:420px; }
 
-  /* 画像ボックス（画像が無ければラベルを表示） */
   .imgbox{ position:relative; overflow:hidden; border-radius:999px; width:100%; }
   .imgbox img{ width:100%; height:100%; object-fit:cover; display:block; }
   .imgbox[data-alt]::after{
@@ -111,14 +111,10 @@
     color:#2c2f36; font-weight:800; letter-spacing:.02em;
   }
 
-  /* SNS と住所 */
   .sns{ display:flex; gap:28px; align-items:center; justify-content:center; margin:26px 0 6px; }
   .sns img{ width:52px; height:52px; display:block; }
   .addr{ color:#2c2f36; font-weight:700; letter-spacing:.02em; }
 
-  /* =========================
-     ログアウト確認モーダル
-     ========================= */
   .modal-bg{ position:fixed; inset:0; background:rgba(0,0,0,.28); display:none; align-items:center; justify-content:center; z-index:50; }
   .modal{ width:360px; background:#fff; border-radius:16px; border:1px solid var(--border); box-shadow:var(--shadow);
     padding:24px; text-align:center; }
@@ -130,30 +126,24 @@
 </head>
 <body>
 
-  <!-- =========================
-       トップナビ
-       （管理者/学生で項目を出し分け）
-       ========================= -->
   <div class="topbar">
     <div class="left">
-      <!-- ホームアイコン -->
-      <a href="index.jsp"><img class="home" src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Home"></a>
+      <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp"><img class="home" src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Home"></a>
       <div class="title">文化祭システム</div>
     </div>
 
-    <!-- 中央ナビ（管理者 or 学生） -->
     <div class="center nav">
       <% if ("admin".equals(role)) { %>
-        <a href="main/kikaku_list.jsp">企画一覧</a>
-        <a href="users_list.jsp">ユーザー一覧</a>
-        <a href="survey_list.jsp">アンケート</a>
-        <a href="survey_admin.jsp">アンケート作成</a>
-        <a href="map_list.jsp">校内図</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/users_list">ユーザー一覧</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list">アンケート</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_admin">アンケート作成</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list">校内図</a>
       <% } else { %>
-        <a href="kikaku_list.jsp">企画一覧</a>
-        <a href="kikaku_add.jsp">企画提出</a>
-        <a href="survey_list.jsp">アンケート</a>
-        <a href="map_list.jsp">校内図</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画提出</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list">アンケート</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list">校内図</a>
       <% } %>
     </div>
 
@@ -163,18 +153,13 @@
     </div>
   </div>
 
-  <!-- =========================
-       メインセクション
-       ========================= -->
   <div class="wrap">
-    <!-- メイン画像（無ければ "main" ラベル） -->
     <div class="hero">
       <div class="imgbox" data-alt="main">
-        <img src="images/main.jpg" alt="main" onerror="this.style.display='none'">
+        <img src="<%= request.getContextPath() %>/scoremanager/main/images/main.jpg" alt="main" onerror="this.style.display='none'">
       </div>
     </div>
 
-    <!-- サムネ 2枚（無ければ "e1" / "e2" ラベル） -->
     <div class="thumbs">
       <div class="thumb">
         <div class="imgbox" data-alt="e1">
@@ -188,7 +173,6 @@
       </div>
     </div>
 
-    <!-- SNS アイコン -->
     <div class="sns">
       <img src="https://cdn-icons-png.flaticon.com/512/3670/3670051.png" alt="whatsapp">
       <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="facebook">
@@ -196,30 +180,29 @@
       <img src="https://cdn-icons-png.flaticon.com/512/3670/3670147.png" alt="youtube">
     </div>
 
-    <!-- 住所 -->
     <div class="addr">〒101-8551 東京都千代田区神田三崎町2-4-1</div>
   </div>
 
-  <!-- =========================
-       ログアウト確認モーダル
-       ========================= -->
   <div class="modal-bg" id="logoutModal">
     <div class="modal">
       <h3>ログアウトしますか？</h3>
       <div class="actions">
-        <!-- 実運用では LogoutAction を GET/POST で呼び出す設計に置換可 -->
-        <button class="btn primary" onclick="location.href='login.jsp'">はい</button>
+        <button class="btn primary" onclick="confirmLogout()">はい</button>
         <button class="btn" onclick="closeLogout()">いいえ</button>
       </div>
     </div>
   </div>
 
 <script>
-  // =========================
-  //  モーダル制御（シンプル版）
-  // =========================
-  function openLogout(){ document.getElementById('logoutModal').style.display='flex'; }
-  function closeLogout(){ document.getElementById('logoutModal').style.display='none'; }
+  function openLogout(){
+    document.getElementById('logoutModal').style.display='flex';
+  }
+  function closeLogout(){
+    document.getElementById('logoutModal').style.display='none';
+  }
+  function confirmLogout(){
+    location.href='<%= request.getContextPath() %>/scoremanager/main/logout';
+  }
 </script>
 </body>
 </html>

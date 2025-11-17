@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="styles.css" /></head><body>
 <div class="top-bar">
   <div class="nav-left">
-    <a href="index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
+    <a href="../index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
     <div class="system-title">文化祭システム</div>
   <div class="nav-center" id="navCenter"></div>
 
@@ -23,7 +23,7 @@
     <label class="label">担任名</label><input class="input" id="teacher" placeholder="3年1組 佐藤 など">
     <label class="label">概要</label><textarea id="desc"></textarea>
     <div style="margin-top:10px;">
-      <button class="btn btn-primary" onclick="submitK()">提出</button>
+      <button class="btn btn-primary" onclick="submit()">提出</button>
       <a class="btn btn-ghost" href="kikaku_list.jsp">戻る</a>
     </div>
   </div>

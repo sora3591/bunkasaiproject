@@ -1,55 +1,90 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<!DOCTYPE html><html lang="ja"><head>
-<meta charset="UTF-8"><title>企画一覧</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="styles.css" /></head><body>
+<%@ page isELIgnored="false" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+    // ユーザーがログインしているか確認
+    bean.User user = (bean.User) session.getAttribute("user");
+    if (user == null) {
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
+        return;
+    }
+%>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>企画一覧</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="<%= request.getContextPath() %>/css/styles.css" />
+</head>
+<body>
 <div class="top-bar">
   <div class="nav-left">
-    <a href="index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
+    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
+      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
+    </a>
     <div class="system-title">文化祭システム</div>
-  <div class="nav-center" id="navCenter"></div>
-
   </div>
-  <div class="nav-right">ようこそ</div>
+  <div class="nav-right">ようこそ <%= user.getName() %> さん</div>
 </div>
+
 <div class="wrap">
   <div class="title">企画一覧</div>
+
+  <% if (request.getAttribute("error") != null) { %>
+    <div class="err"><%= request.getAttribute("error") %></div>
+  <% } %>
+
   <div class="table-wrap">
     <table>
-      <thead><tr>
-        <th style="width:90px;">アイコン</th>
-        <th>タイトル</th><th>日時</th><th>場所</th><th>担任名</th><th>ステータス</th><th style="width:100px;"></th>
-      </tr></thead>
-      <tbody id="rows"></tbody>
+      <thead>
+        <tr>
+          <th style="width:90px;">アイコン</th>
+          <th>タイトル</th>
+          <th>日時</th>
+          <th>場所</th>
+          <th>担任名</th>
+          <th>ステータス</th>
+          <th style="width:100px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <c:forEach var="kikaku" items="${kikakuList}">
+          <tr>
+            <td><img class="thumb" src="<%= request.getContextPath() %>/images/${kikaku.id}.jpg" onerror="this.src='<%= request.getContextPath() %>/images/main.jpg'" style="width:80px; height:60px; object-fit:cover;"></td>
+            <td>${kikaku.title}</td>
+            <td>${kikaku.datetime}</td>
+            <td>${kikaku.place}</td>
+            <td>${kikaku.teacher}</td>
+            <td>
+              <c:choose>
+                <c:when test="${kikaku.status == '承認完了'}">
+                  <span class="tag tag-green">${kikaku.status}</span>
+                </c:when>
+                <c:when test="${kikaku.status == '承認中'}">
+                  <span class="tag tag-blue">${kikaku.status}</span>
+                </c:when>
+                <c:otherwise>
+                  <span class="tag tag-orange">${kikaku.status}</span>
+                </c:otherwise>
+              </c:choose>
+            </td>
+            <td>
+              <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail.jsp?id=${kikaku.id}">開く</a>
+            </td>
+          </tr>
+        </c:forEach>
+      </tbody>
     </table>
   </div>
-  <div style="margin-top:12px;"><a class="btn btn-primary" href="kikaku_add.jsp">企画の新規提出</a></div>
-</div>
-<div class="modal-bg" id="logoutModal">
-  <div class="modal">
-    <div>ログアウトしますか？</div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="confirmLogout()">はい</button>
-      <button class="btn btn-ghost" onclick="closeLogout()">いいえ</button>
-    </div>
+
+  <div style="margin-top:12px;">
+    <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add.jsp">企画の新規提出</a>
+    <form method="post" action="<%= request.getContextPath() %>/logout" style="display:inline;">
+      <button class="btn btn-ghost" type="submit">ログアウト</button>
+    </form>
   </div>
 </div>
-<script src="app.js"></script>
-<script>
-window.addEventListener('DOMContentLoaded',()=>{
-  const u=requireAuth(); if(!u) return; fillWelcome(); renderNav();
-  const data=getProposals().filter(p=>u.role==='admin'?true:p.ownerId===u.userId);
-  rows.innerHTML=data.map(row=>`
-    <tr>
-      <td><img class="thumb" src="images/${row.id}.jpg" onerror="this.src='images/main.jpg'"></td>
-      <td>${row.title}</td>
-      <td>${row.datetime}</td>
-      <td>${row.place}</td>
-      <td>${row.teacher}</td>
-      <td><span class="tag ${row.status==='承認中'?'tag-blue':(row.status==='承認完了'?'tag-green':'tag-orange')}">${row.status}</span></td>
-      <td><button class="btn btn-ghost" onclick="openDetail('${row.id}')">開く</button></td>
-    </tr>`).join('');
-});
-function openDetail(id){ location.href = detailPathByRole()+`?id=${encodeURIComponent(id)}`; }
-</script>
-</body></html>
+
+</body>
+</html>
