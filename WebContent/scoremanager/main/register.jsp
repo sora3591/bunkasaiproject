@@ -10,7 +10,7 @@
 <body>
 <div class="top-bar">
   <div class="nav-left">
-    <a href="<%= request.getContextPath() %>/index.jsp">
+    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
       <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
     </a>
     <div class="system-title">文化祭システム</div>

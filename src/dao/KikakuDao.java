@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class KikakuDao extends Dao {
 
         try {
             connection = getConnection();
-            statement = connection.prepareStatement("SELECT * FROM KIKAKU ORDER BY DATETIME DESC");
+            statement = connection.prepareStatement("SELECT * FROM PUBLIC.KIKAKU ORDER BY DATETIME DESC");
             rSet = statement.executeQuery();
 
             while (rSet.next()) {
@@ -37,27 +38,7 @@ public class KikakuDao extends Dao {
         } catch (Exception e) {
             throw e;
         } finally {
-            if (rSet != null) {
-                try {
-                    rSet.close();
-                } catch (SQLException sqle) {
-                    // ignore
-                }
-            }
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException sqle) {
-                    // ignore
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException sqle) {
-                    // ignore
-                }
-            }
+            closeResources(rSet, statement, connection);
         }
         return list;
     }
@@ -70,47 +51,42 @@ public class KikakuDao extends Dao {
 
         try {
             connection = getConnection();
-            statement = connection.prepareStatement("SELECT * FROM KIKAKU WHERE ID = ?");
+            statement = connection.prepareStatement("SELECT * FROM PUBLIC.KIKAKU WHERE ID = ?");
             statement.setString(1, id);
             rSet = statement.executeQuery();
 
             if (rSet.next()) {
-                kikaku = new Kikaku();
-                kikaku.setId(rSet.getString("ID"));
-                kikaku.setTitle(rSet.getString("TITLE"));
-                kikaku.setDatetime(rSet.getString("DATETIME"));
-                kikaku.setPlace(rSet.getString("PLACE"));
-                kikaku.setTeacher(rSet.getString("TEACHER"));
-                kikaku.setDescription(rSet.getString("DESCRIPTION"));
-                kikaku.setStatus(rSet.getString("STATUS"));
-                kikaku.setOwnerId(rSet.getString("OWNER_ID"));
+                kikaku = createKikakuFromResultSet(rSet);
             }
         } catch (Exception e) {
             throw e;
         } finally {
-            if (rSet != null) {
-                try {
-                    rSet.close();
-                } catch (SQLException sqle) {
-                    // ignore
-                }
-            }
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException sqle) {
-                    // ignore
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException sqle) {
-                    // ignore
-                }
-            }
+            closeResources(rSet, statement, connection);
         }
         return kikaku;
+    }
+
+    public List<Kikaku> getByOwnerId(String ownerId) throws Exception {
+        List<Kikaku> list = new ArrayList<>();
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rSet = null;
+
+        try {
+            connection = getConnection();
+            statement = connection.prepareStatement("SELECT * FROM PUBLIC.KIKAKU WHERE OWNER_ID = ? ORDER BY DATETIME DESC");
+            statement.setString(1, ownerId);
+            rSet = statement.executeQuery();
+
+            while (rSet.next()) {
+                list.add(createKikakuFromResultSet(rSet));
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            closeResources(rSet, statement, connection);
+        }
+        return list;
     }
 
     public boolean save(Kikaku kikaku) throws Exception {
@@ -121,12 +97,28 @@ public class KikakuDao extends Dao {
         try {
             connection = getConnection();
             Kikaku old = get(kikaku.getId());
+
+            // DATETIMEをTimestamp型に変換
+            Timestamp datetimeValue = null;
+            if (kikaku.getDatetime() != null && !kikaku.getDatetime().isEmpty()) {
+                try {
+                    datetimeValue = Timestamp.valueOf(kikaku.getDatetime());
+                } catch (Exception e) {
+                    // フォーマットが合わない場合はnull
+                    datetimeValue = null;
+                }
+            }
+
             if (old == null) {
                 statement = connection.prepareStatement(
-                    "INSERT INTO KIKAKU(ID, TITLE, DATETIME, PLACE, TEACHER, DESCRIPTION, STATUS, OWNER_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    "INSERT INTO PUBLIC.KIKAKU(ID, TITLE, DATETIME, PLACE, TEACHER, DESCRIPTION, STATUS, OWNER_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
                 statement.setString(1, kikaku.getId());
                 statement.setString(2, kikaku.getTitle());
-                statement.setString(3, kikaku.getDatetime());
+                if (datetimeValue != null) {
+                    statement.setTimestamp(3, datetimeValue);
+                } else {
+                    statement.setNull(3, java.sql.Types.TIMESTAMP);
+                }
                 statement.setString(4, kikaku.getPlace());
                 statement.setString(5, kikaku.getTeacher());
                 statement.setString(6, kikaku.getDescription());
@@ -134,9 +126,13 @@ public class KikakuDao extends Dao {
                 statement.setString(8, kikaku.getOwnerId());
             } else {
                 statement = connection.prepareStatement(
-                    "UPDATE KIKAKU SET TITLE = ?, DATETIME = ?, PLACE = ?, TEACHER = ?, DESCRIPTION = ?, STATUS = ? WHERE ID = ?");
+                    "UPDATE PUBLIC.KIKAKU SET TITLE = ?, DATETIME = ?, PLACE = ?, TEACHER = ?, DESCRIPTION = ?, STATUS = ? WHERE ID = ?");
                 statement.setString(1, kikaku.getTitle());
-                statement.setString(2, kikaku.getDatetime());
+                if (datetimeValue != null) {
+                    statement.setTimestamp(2, datetimeValue);
+                } else {
+                    statement.setNull(2, java.sql.Types.TIMESTAMP);
+                }
                 statement.setString(3, kikaku.getPlace());
                 statement.setString(4, kikaku.getTeacher());
                 statement.setString(5, kikaku.getDescription());
@@ -172,7 +168,7 @@ public class KikakuDao extends Dao {
 
         try {
             connection = getConnection();
-            statement = connection.prepareStatement("DELETE FROM KIKAKU WHERE ID = ?");
+            statement = connection.prepareStatement("DELETE FROM PUBLIC.KIKAKU WHERE ID = ?");
             statement.setString(1, id);
             count = statement.executeUpdate();
         } catch (Exception e) {
@@ -194,5 +190,42 @@ public class KikakuDao extends Dao {
             }
         }
         return count > 0;
+    }
+
+    private Kikaku createKikakuFromResultSet(ResultSet rSet) throws SQLException {
+        Kikaku kikaku = new Kikaku();
+        kikaku.setId(rSet.getString("ID"));
+        kikaku.setTitle(rSet.getString("TITLE"));
+        kikaku.setDatetime(rSet.getString("DATETIME"));
+        kikaku.setPlace(rSet.getString("PLACE"));
+        kikaku.setTeacher(rSet.getString("TEACHER"));
+        kikaku.setDescription(rSet.getString("DESCRIPTION"));
+        kikaku.setStatus(rSet.getString("STATUS"));
+        kikaku.setOwnerId(rSet.getString("OWNER_ID"));
+        return kikaku;
+    }
+
+    private void closeResources(ResultSet rSet, PreparedStatement statement, Connection connection) {
+        if (rSet != null) {
+            try {
+                rSet.close();
+            } catch (SQLException sqle) {
+                // ignore
+            }
+        }
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException sqle) {
+                // ignore
+            }
+        }
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException sqle) {
+                // ignore
+            }
+        }
     }
 }

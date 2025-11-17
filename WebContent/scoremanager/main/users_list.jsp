@@ -2,6 +2,7 @@
 <%@ page isELIgnored="false" %>
 <%@ page import="java.util.List" %>
 <%@ page import="bean.User" %>
+<%@ page import="dao.UserDao" %>
 <%
   // セッションチェック
   Object userObj = session.getAttribute("user");
@@ -16,10 +17,19 @@
     return;
   }
 
-  @SuppressWarnings("unchecked")
-  List<User> users = (List<User>) request.getAttribute("users");
-  if (users == null) {
-    users = new java.util.ArrayList<>();
+  // ユーザー一覧を取得
+  List<User> users = new java.util.ArrayList<>();
+  String errorMsg = null;
+  try {
+    UserDao dao = new UserDao();
+    users = dao.getAll();
+    System.out.println("=== Users Retrieved: " + users.size() + " ===");
+    for (User u : users) {
+      System.out.println("User: " + u.getId() + ", " + u.getName());
+    }
+  } catch (Exception e) {
+    errorMsg = "ユーザー一覧の取得に失敗しました: " + e.getMessage();
+    e.printStackTrace();
   }
 %>
 <!DOCTYPE html>
@@ -47,6 +57,11 @@
 
 <div class="wrap">
   <div class="title">ユーザー一覧</div>
+
+  <% if (errorMsg != null) { %>
+    <div class="err"><%= errorMsg %></div>
+  <% } %>
+
   <div class="table-wrap">
     <table>
       <thead>
@@ -60,24 +75,30 @@
         </tr>
       </thead>
       <tbody id="rows">
-        <% for (User u : users) { %>
+        <% if (users.isEmpty()) { %>
           <tr>
-            <td><%= u.getId() %></td>
-            <td><%= u.getName() %></td>
-            <td><%= u.getRole() %></td>
-            <td><%= u.getClassNum() != null ? u.getClassNum() : "" %></td>
-            <td><%= u.getEmail() != null ? u.getEmail() : "" %></td>
-            <td>
-              <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/edit_user?id=<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>">編集</a>
-              <button class="btn btn-danger" onclick="delUser('<%= u.getId() %>','<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>')">削除</button>
-            </td>
+            <td colspan="6" style="text-align:center; padding:20px;">ユーザーが登録されていません</td>
           </tr>
+        <% } else { %>
+          <% for (User u : users) { %>
+            <tr>
+              <td><%= u.getId() %></td>
+              <td><%= u.getName() %></td>
+              <td><%= u.getRole() %></td>
+              <td><%= u.getClassNum() != null ? u.getClassNum() : "" %></td>
+              <td><%= u.getEmail() != null ? u.getEmail() : "" %></td>
+              <td>
+                <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/edit_user?id=<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>">編集</a>
+                <button class="btn btn-danger" onclick="delUser('<%= u.getId() %>','<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>')">削除</button>
+              </td>
+            </tr>
+          <% } %>
         <% } %>
       </tbody>
     </table>
   </div>
   <div style="margin-top:12px;">
-    <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/user_add.jsp">ユーザー追加</a>
+    <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/user_add">ユーザー追加</a>
   </div>
 </div>
 
@@ -100,7 +121,6 @@
       method: 'POST'
     }).then(response => {
       if (response.ok) {
-        // 削除成功時はページをリロード
         location.reload();
       } else {
         alert('削除に失敗しました');
