@@ -5,7 +5,7 @@
     // ユーザーがログインしているか確認
     bean.User user = (bean.User) session.getAttribute("user");
     if (user == null) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
+        response.sendRedirect(request.getContextPath() + "/scoremanager/main/login.jsp");
         return;
     }
 %>
@@ -16,6 +16,37 @@
   <title>企画一覧</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="<%= request.getContextPath() %>/css/styles.css" />
+  <style>
+    .header-nav {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .header-nav a {
+      color: #222;
+      text-decoration: none;
+      transition: color 0.2s ease;
+      position: relative;
+    }
+    .header-nav a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 0;
+      height: 2px;
+      background: #1d8cf8;
+      transition: width 0.22s ease;
+    }
+    .header-nav a:hover {
+      color: #1d8cf8;
+    }
+    .header-nav a:hover::after {
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
 <div class="top-bar">
@@ -24,22 +55,33 @@
       <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
     </a>
     <div class="system-title">文化祭システム</div>
+    <!-- ヘッダーナビゲーション -->
+    <div class="header-nav">
+      <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list.jsp">企画一覧</a>
+      <% if ("admin".equals(user.getRole())) { %>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/users_list.jsp">ユーザー一覧</a>
+      <% } %>
+      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
+      <% if ("admin".equals(user.getRole())) { %>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
+      <% } %>
+    </div>
   </div>
-  <div class="nav-right">ようこそ <%= user.getName() %> さん</div>
+  <div class="nav-right">
+    <span style="margin-right: 16px;">ようこそ <%= user.getName() %> さん</span>
+    <a href="javascript:void(0)" onclick="openLogoutModal()" style="color:#1d8cf8; cursor:pointer; text-decoration:none; font-weight:600;">ログアウト</a>
+  </div>
 </div>
 
 <div class="wrap">
   <div class="title">企画一覧</div>
-
   <% if (request.getAttribute("error") != null) { %>
     <div class="err"><%= request.getAttribute("error") %></div>
   <% } %>
-
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th style="width:90px;">アイコン</th>
           <th>タイトル</th>
           <th>日時</th>
           <th>場所</th>
@@ -51,7 +93,6 @@
       <tbody>
         <c:forEach var="kikaku" items="${kikakuList}">
           <tr>
-            <td><img class="thumb" src="<%= request.getContextPath() %>/images/${kikaku.id}.jpg" onerror="this.src='<%= request.getContextPath() %>/images/main.jpg'" style="width:80px; height:60px; object-fit:cover;"></td>
             <td>${kikaku.title}</td>
             <td>${kikaku.datetime}</td>
             <td>${kikaku.place}</td>
@@ -77,14 +118,34 @@
       </tbody>
     </table>
   </div>
-
   <div style="margin-top:12px;">
-    <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add.jsp">企画の新規提出</a>
-    <form method="post" action="<%= request.getContextPath() %>/logout" style="display:inline;">
-      <button class="btn btn-ghost" type="submit">ログアウト</button>
-    </form>
+    <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画の新規提出</a>
   </div>
 </div>
 
+<!-- ログアウト確認モーダル -->
+<div class="modal-bg" id="logoutModal">
+  <div class="modal">
+    <div>ログアウトしますか？</div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confirmLogout()">はい</button>
+      <button class="btn btn-ghost" onclick="closeLogout()">いいえ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'flex';
+  }
+
+  function closeLogout() {
+    document.getElementById('logoutModal').style.display = 'none';
+  }
+
+  function confirmLogout() {
+    location.href = '<%= request.getContextPath() %>/scoremanager/main/logout';
+  }
+</script>
 </body>
 </html>

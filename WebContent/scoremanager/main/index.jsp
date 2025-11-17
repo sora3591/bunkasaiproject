@@ -149,7 +149,7 @@
 
     <div class="right">
       <div><%= welcome %></div>
-      <a class="logout" href="javascript:void(0)" onclick="openLogout()">ログアウト</a>
+      <a href="<%= request.getContextPath() %>/scoremanager/main/logout.jsp">ログアウト</a>
     </div>
   </div>
 
@@ -163,7 +163,7 @@
     <div class="thumbs">
       <div class="thumb">
         <div class="imgbox" data-alt="e1">
-          <img src="images/e1.jpg" alt="e1" onerror="this.style.display='none'">
+          <img src="images/20241002_071933.JPG" alt="e1" onerror="this.style.display='none'">
         </div>
       </div>
       <div class="thumb">
