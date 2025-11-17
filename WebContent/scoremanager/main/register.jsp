@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page isELIgnored="false" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,7 +11,7 @@
 <body>
 <div class="top-bar">
   <div class="nav-left">
-    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
+    <a href="<%= request.getContextPath() %>/index.jsp">
       <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
     </a>
     <div class="system-title">文化祭システム</div>
@@ -24,25 +25,20 @@
     <form method="post" action="<%= request.getContextPath() %>/scoremanager/main/register">
       <div class="row">
         <div>
-          <label class="label">ユーザーID</label>
-          <input class="input" name="id" required>
+          <label class="label">ユーザーID *</label>
+          <input class="input" type="text" name="id" required>
         </div>
         <div>
-          <label class="label">氏名</label>
-          <input class="input" name="name" required>
+          <label class="label">氏名 *</label>
+          <input class="input" type="text" name="name" required>
         </div>
       </div>
+
       <div class="row">
         <div>
-          <label class="label">学年・クラス</label>
-          <input class="input" name="classNum" placeholder="例）3-1">
+          <label class="label">パスワード *</label>
+          <input class="input" type="password" name="password" required>
         </div>
-        <div>
-          <label class="label">メール</label>
-          <input class="input" name="email">
-        </div>
-      </div>
-      <div class="row">
         <div>
           <label class="label">ロール</label>
           <select name="role" class="select">
@@ -50,16 +46,27 @@
             <option value="admin">管理者</option>
           </select>
         </div>
-        <div></div>
       </div>
+
+      <div class="row">
+        <div>
+          <label class="label">学年・クラス</label>
+          <input class="input" type="text" name="classNum" placeholder="例）3-1">
+        </div>
+        <div>
+          <label class="label">メール</label>
+          <input class="input" type="email" name="email">
+        </div>
+      </div>
+
       <div style="margin-top:12px;">
         <button class="btn btn-primary" type="submit">登録</button>
-        <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/login.jsp"">戻る</a>
+        <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/login.jsp">戻る</a>
       </div>
     </form>
 
     <% if (request.getAttribute("error") != null) { %>
-      <div class="err"><%= request.getAttribute("error") %></div>
+      <div class="err" style="margin-top:12px;"><%= request.getAttribute("error") %></div>
     <% } %>
   </div>
 </div>
@@ -76,8 +83,22 @@
 
 <script src="<%= request.getContextPath() %>/app.js"></script>
 <script>
-  fillWelcome();
-  renderNav();
+  function openLogout() {
+    document.getElementById('logoutModal').style.display = 'flex';
+  }
+
+  function closeLogout() {
+    document.getElementById('logoutModal').style.display = 'none';
+  }
+
+  function confirmLogout() {
+    location.href = '<%= request.getContextPath() %>/scoremanager/main/logout';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof fillWelcome === 'function') fillWelcome();
+    if (typeof renderNav === 'function') renderNav();
+  });
 </script>
 </body>
 </html>
