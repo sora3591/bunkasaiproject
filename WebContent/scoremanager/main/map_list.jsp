@@ -1,11 +1,12 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page isELIgnored="true" %>
 <!DOCTYPE html><html lang="ja"><head>
 <meta charset="UTF-8"><title>校内図一覧</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="styles.css" /></head><body>
 <div class="top-bar">
   <div class="nav-left">
-    <a href="index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
+    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
     <div class="system-title">文化祭システム</div>
   <div class="nav-center" id="navCenter"></div>
 

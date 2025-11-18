@@ -1,43 +1,76 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<!DOCTYPE html><html lang="ja"><head>
-<meta charset="UTF-8"><title>新規登録</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="styles.css" /></head><body>
+<%@ page isELIgnored="false" %>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>新規登録</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
 <div class="top-bar">
   <div class="nav-left">
-    <a href="index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
+    <a href="<%= request.getContextPath() %>/index.jsp">
+      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
+    </a>
     <div class="system-title">文化祭システム</div>
-  <div class="nav-center" id="navCenter"></div>
-
   </div>
   <div class="nav-right">ようこそ</div>
 </div>
+
 <div class="wrap">
   <div class="title">新規登録</div>
   <div class="card">
-    <div class="row">
-      <div><label class="label">ユーザーID</label><input class="input" id="uid"></div>
-      <div><label class="label">氏名</label><input class="input" id="uname"></div>
-    </div>
-    <div class="row">
-      <div><label class="label">学年・クラス</label><input class="input" id="uclass" placeholder="例）3-1"></div>
-      <div><label class="label">メール</label><input class="input" id="uemail"></div>
-    </div>
-    <div class="row">
-      <div><label class="label">ロール</label>
-        <select id="urole" class="select">
-          <option value="student">学生</option>
-          <option value="admin">管理者</option>
-        </select>
+    <form method="post" action="<%= request.getContextPath() %>/scoremanager/main/register">
+      <div class="row">
+        <div>
+          <label class="label">ユーザーID *</label>
+          <input class="input" type="text" name="id" required>
+        </div>
+        <div>
+          <label class="label">氏名 *</label>
+          <input class="input" type="text" name="name" required>
+        </div>
       </div>
-      <div></div>
-    </div>
-    <div style="margin-top:12px;">
-      <button class="btn btn-primary" onclick="reg()">登録</button>
-      <a class="btn btn-ghost" href="login.jsp">戻る</a>
-    </div>
+
+      <div class="row">
+        <div>
+          <label class="label">パスワード *</label>
+          <input class="input" type="password" name="password" required>
+        </div>
+        <div>
+          <label class="label">ロール</label>
+          <select name="role" class="select">
+            <option value="student">学生</option>
+            <option value="admin">管理者</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label class="label">学年・クラス</label>
+          <input class="input" type="text" name="classNum" placeholder="例）3-1">
+        </div>
+        <div>
+          <label class="label">メール</label>
+          <input class="input" type="email" name="email">
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn btn-primary" type="submit">登録</button>
+        <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/login.jsp">戻る</a>
+      </div>
+    </form>
+
+    <% if (request.getAttribute("error") != null) { %>
+      <div class="err" style="margin-top:12px;"><%= request.getAttribute("error") %></div>
+    <% } %>
   </div>
 </div>
+
 <div class="modal-bg" id="logoutModal">
   <div class="modal">
     <div>ログアウトしますか？</div>
@@ -47,17 +80,25 @@
     </div>
   </div>
 </div>
-<script src="app.js"></script>
+
+<script src="<%= request.getContextPath() %>/app.js"></script>
 <script>
-function reg(){
-  const id=uid.value.trim(); const name=uname.value.trim();
-  if(!id||!name) return alert('必須項目を入力してください');
-  const users=getUsers();
-  if(users.some(u=>u.id===id)) return alert('このIDは既に存在します');
-  users.push({id, name, role: urole.value, class: uclass.value, email: uemail.value});
-  saveUsers(users);
-  alert('登録しました'); location.href='login.jsp';
-}
-requireAuth(); fillWelcome(); renderNav();
+  function openLogout() {
+    document.getElementById('logoutModal').style.display = 'flex';
+  }
+
+  function closeLogout() {
+    document.getElementById('logoutModal').style.display = 'none';
+  }
+
+  function confirmLogout() {
+    location.href = '<%= request.getContextPath() %>/scoremanager/main/logout';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof fillWelcome === 'function') fillWelcome();
+    if (typeof renderNav === 'function') renderNav();
+  });
 </script>
-</body></html>
+</body>
+</html>

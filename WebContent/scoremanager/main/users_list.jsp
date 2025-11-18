@@ -1,27 +1,107 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<!DOCTYPE html><html lang="ja"><head>
-<meta charset="UTF-8"><title>ユーザー一覧</title>
+<%@ page isELIgnored="false" %>
+<%@ page import="java.util.List" %>
+<%@ page import="bean.User" %>
+<%@ page import="dao.UserDao" %>
+<%
+  // セッションチェック
+  Object userObj = session.getAttribute("user");
+  if (userObj == null) {
+    response.sendRedirect(request.getContextPath() + "/scoremanager/main/login.jsp");
+    return;
+  }
+
+  User currentUser = (User) userObj;
+  if (!"admin".equals(currentUser.getRole())) {
+    response.sendRedirect(request.getContextPath() + "/scoremanager/main/index.jsp");
+    return;
+  }
+
+  // ユーザー一覧を取得
+  List<User> users = new java.util.ArrayList<>();
+  String errorMsg = null;
+  try {
+    UserDao dao = new UserDao();
+    users = dao.getAll();
+    System.out.println("=== Users Retrieved: " + users.size() + " ===");
+    for (User u : users) {
+      System.out.println("User: " + u.getId() + ", " + u.getName());
+    }
+  } catch (Exception e) {
+    errorMsg = "ユーザー一覧の取得に失敗しました: " + e.getMessage();
+    e.printStackTrace();
+  }
+%>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ユーザー一覧</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="styles.css" /></head><body>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
 <div class="top-bar">
   <div class="nav-left">
-    <a href="index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
+    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
+      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
+    </a>
     <div class="system-title">文化祭システム</div>
-  <div class="nav-center" id="navCenter"></div>
-
+    <div class="nav-center" id="navCenter"></div>
   </div>
-  <div class="nav-right">ようこそ</div>
+  <div class="nav-right">
+    <span id="welcome">ようこそ</span>
+    <a href="javascript:void(0)" onclick="openLogout()" style="color:#1d8cf8; cursor:pointer; text-decoration:none;">ログアウト</a>
+  </div>
 </div>
+
 <div class="wrap">
   <div class="title">ユーザー一覧</div>
+
+  <% if (errorMsg != null) { %>
+    <div class="err"><%= errorMsg %></div>
+  <% } %>
+
   <div class="table-wrap">
     <table>
-      <thead><tr><th>ID</th><th>氏名</th><th>ロール</th><th>クラス</th><th>メール</th><th style="width:160px;"></th></tr></thead>
-      <tbody id="rows"></tbody>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>氏名</th>
+          <th>ロール</th>
+          <th>クラス</th>
+          <th>メール</th>
+          <th style="width:160px;"></th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <% if (users.isEmpty()) { %>
+          <tr>
+            <td colspan="6" style="text-align:center; padding:20px;">ユーザーが登録されていません</td>
+          </tr>
+        <% } else { %>
+          <% for (User u : users) { %>
+            <tr>
+              <td><%= u.getId() %></td>
+              <td><%= u.getName() %></td>
+              <td><%= u.getRole() %></td>
+              <td><%= u.getClassNum() != null ? u.getClassNum() : "" %></td>
+              <td><%= u.getEmail() != null ? u.getEmail() : "" %></td>
+              <td>
+                <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/edit_user?id=<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>">編集</a>
+                <button class="btn btn-danger" onclick="delUser('<%= u.getId() %>','<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>')">削除</button>
+              </td>
+            </tr>
+          <% } %>
+        <% } %>
+      </tbody>
     </table>
   </div>
-  <div style="margin-top:12px;"><a class="btn btn-primary" href="user_add.jsp">ユーザー追加</a></div>
+  <div style="margin-top:12px;">
+    <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/user_add">ユーザー追加</a>
+  </div>
 </div>
+
 <div class="modal-bg" id="logoutModal">
   <div class="modal">
     <div>ログアウトしますか？</div>
@@ -31,20 +111,42 @@
     </div>
   </div>
 </div>
-<script src="app.js"></script>
+
+<script src="<%= request.getContextPath() %>/app.js"></script>
 <script>
-const u=requireRole(['admin']); if(!u){}; fillWelcome(); renderNav();
-function render(){
-  rows.innerHTML=getUsers().map(x=>`
-    <tr>
-      <td>${x.id}</td><td>${x.name}</td><td>${x.role}</td><td>${x.class||''}</td><td>${x.email||''}</td>
-      <td>
-        <a class="btn btn-ghost" href="user_edit.html?id=${encodeURIComponent(x.id)}">編集</a>
-        <button class="btn btn-danger" onclick="delUser('${x.id}')">削除</button>
-      </td>
-    </tr>`).join('');
-}
-function delUser(id){ if(!confirm('削除しますか？')) return; const arr=getUsers().filter(u=>u.id!==id); saveUsers(arr); render(); }
-render();
+  function delUser(id, encodedId) {
+    if (!confirm('削除しますか？')) return;
+
+    fetch('<%= request.getContextPath() %>/scoremanager/main/delete_user?id=' + encodedId, {
+      method: 'POST'
+    }).then(response => {
+      if (response.ok) {
+        location.reload();
+      } else {
+        alert('削除に失敗しました');
+      }
+    }).catch(error => {
+      console.error('Error:', error);
+      alert('削除に失敗しました');
+    });
+  }
+
+  function openLogout() {
+    document.getElementById('logoutModal').style.display = 'flex';
+  }
+
+  function closeLogout() {
+    document.getElementById('logoutModal').style.display = 'none';
+  }
+
+  function confirmLogout() {
+    location.href = '<%= request.getContextPath() %>/scoremanager/main/logout';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof fillWelcome === 'function') fillWelcome();
+    if (typeof renderNav === 'function') renderNav();
+  });
 </script>
-</body></html>
+</body>
+</html>

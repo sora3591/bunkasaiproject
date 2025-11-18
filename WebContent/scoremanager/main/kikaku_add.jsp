@@ -1,33 +1,84 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<!DOCTYPE html><html lang="ja"><head>
-<meta charset="UTF-8"><title>企画新規提出</title>
+<%@ page isELIgnored="false" %>
+<%
+  // セッションチェック
+  Object userObj = session.getAttribute("user");
+  if (userObj == null) {
+    response.sendRedirect(request.getContextPath() + "/scoremanager/main/login.jsp");
+    return;
+  }
+
+  bean.User currentUser = (bean.User) userObj;
+  if (!"student".equals(currentUser.getRole()) && !"admin".equals(currentUser.getRole())) {
+    response.sendRedirect(request.getContextPath() + "/scoremanager/main/index.jsp");
+    return;
+  }
+%>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>企画新規提出</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="styles.css" /></head><body>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
 <div class="top-bar">
   <div class="nav-left">
-    <a href="index.jsp"><img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home"></a>
+    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
+      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
+    </a>
     <div class="system-title">文化祭システム</div>
-  <div class="nav-center" id="navCenter"></div>
-
+    <div class="nav-center" id="navCenter"></div>
   </div>
-  <div class="nav-right">ようこそ</div>
+  <div class="nav-right">
+    <span id="welcome">ようこそ</span>
+    <a href="javascript:void(0)" onclick="openLogout()" style="color:#1d8cf8; cursor:pointer; text-decoration:none;">ログアウト</a>
+  </div>
 </div>
+
 <div class="wrap">
   <div class="title">企画新規提出（学生）</div>
   <div class="card">
-    <label class="label">タイトル</label><input class="input" id="title">
-    <div class="row">
-      <div><label class="label">日時</label><input class="input" id="dt" placeholder="YYYY-MM-DD HH:mm"></div>
-      <div><label class="label">場所</label><input class="input" id="place"></div>
-    </div>
-    <label class="label">担任名</label><input class="input" id="teacher" placeholder="3年1組 佐藤 など">
-    <label class="label">概要</label><textarea id="desc"></textarea>
-    <div style="margin-top:10px;">
-      <button class="btn btn-primary" onclick="submitK()">提出</button>
-      <a class="btn btn-ghost" href="kikaku_list.jsp">戻る</a>
-    </div>
+    <form method="post" action="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">
+      <div>
+        <label class="label">タイトル *</label>
+        <input class="input" type="text" name="title" required>
+      </div>
+
+      <div class="row">
+        <div>
+          <label class="label">日時</label>
+          <input class="input" type="datetime-local" name="datetime" placeholder="YYYY-MM-DD HH:mm">
+        </div>
+        <div>
+          <label class="label">場所</label>
+          <input class="input" type="text" name="place">
+        </div>
+      </div>
+
+      <div>
+        <label class="label">担任名</label>
+        <input class="input" type="text" name="teacher" placeholder="3年1組 佐藤 など">
+      </div>
+
+      <div>
+        <label class="label">概要</label>
+        <textarea class="input" name="description" style="min-height:120px;"></textarea>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn btn-primary" type="submit">提出</button>
+        <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list.jsp">戻る</a>
+      </div>
+    </form>
+
+    <% if (request.getAttribute("error") != null) { %>
+      <div class="err" style="margin-top:12px;"><%= request.getAttribute("error") %></div>
+    <% } %>
   </div>
 </div>
+
 <div class="modal-bg" id="logoutModal">
   <div class="modal">
     <div>ログアウトしますか？</div>
@@ -37,15 +88,25 @@
     </div>
   </div>
 </div>
-<script src="app.js"></script>
+
+<script src="<%= request.getContextPath() %>/app.js"></script>
 <script>
-const u=requireRole(['student','admin']); if(!u){}; fillWelcome(); renderNav();
-function submitK(){
-  const proposals=getProposals();
-  const id=uid('p');
-  proposals.push({id, title:title.value.trim(), datetime:dt.value, place:place.value, teacher:teacher.value, status:'提出待ち', ownerId:u.userId, desc:desc.value, files:[]});
-  saveProposals(proposals);
-  alert('提出しました'); location.href='kikaku_list.jsp';
-}
+  function openLogout() {
+    document.getElementById('logoutModal').style.display = 'flex';
+  }
+
+  function closeLogout() {
+    document.getElementById('logoutModal').style.display = 'none';
+  }
+
+  function confirmLogout() {
+    location.href = '<%= request.getContextPath() %>/scoremanager/main/logout';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof fillWelcome === 'function') fillWelcome();
+    if (typeof renderNav === 'function') renderNav();
+  });
 </script>
-</body></html>
+</body>
+</html>
