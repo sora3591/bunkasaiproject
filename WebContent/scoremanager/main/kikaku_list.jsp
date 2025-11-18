@@ -9,6 +9,8 @@
         return;
     }
 %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:import url="/common/header.jsp"></c:import>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -49,29 +51,9 @@
   </style>
 </head>
 <body>
-<div class="top-bar">
-  <div class="nav-left">
-    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
-      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
-    </a>
-    <div class="system-title">文化祭システム</div>
-    <!-- ヘッダーナビゲーション -->
-    <div class="header-nav">
-      <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list.jsp">企画一覧</a>
-      <% if ("admin".equals(user.getRole())) { %>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/users_list.jsp">ユーザー一覧</a>
-      <% } %>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
-      <% if ("admin".equals(user.getRole())) { %>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
-      <% } %>
-    </div>
-  </div>
-  <div class="nav-right">
-    <span style="margin-right: 16px;">ようこそ <%= user.getName() %> さん</span>
-    <a href="javascript:void(0)" onclick="openLogoutModal()" style="color:#1d8cf8; cursor:pointer; text-decoration:none; font-weight:600;">ログアウト</a>
-  </div>
-</div>
+
+
+
 
 <div class="wrap">
   <div class="title">企画一覧</div>
