@@ -36,20 +36,6 @@
 </div>
 <script src="app.js"></script>
 <script>
-window.addEventListener('DOMContentLoaded',()=>{
-  const u=requireAuth(); if(!u) return; fillWelcome(); renderNav();
-  const data=getProposals().filter(p=>u.role==='admin'?true:p.ownerId===u.userId);
-  rows.innerHTML=data.map(row=>`
-    <tr>
-      <td><img class="thumb" src="images/${row.id}.jpg" onerror="this.src='images/main.jpg'"></td>
-      <td>${row.title}</td>
-      <td>${row.datetime}</td>
-      <td>${row.place}</td>
-      <td>${row.teacher}</td>
-      <td><span class="tag ${row.status==='承認中'?'tag-blue':(row.status==='承認完了'?'tag-green':'tag-orange')}">${row.status}</span></td>
-      <td><button class="btn btn-ghost" onclick="openDetail('${row.id}')">開く</button></td>
-    </tr>`).join('');
-});
-function openDetail(id){ location.href = detailPathByRole()+`?id=${encodeURIComponent(id)}`; }
+
 </script>
 </body></html>
