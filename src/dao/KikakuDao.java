@@ -24,16 +24,7 @@ public class KikakuDao extends Dao {
             rSet = statement.executeQuery();
 
             while (rSet.next()) {
-                Kikaku kikaku = new Kikaku();
-                kikaku.setId(rSet.getString("ID"));
-                kikaku.setTitle(rSet.getString("TITLE"));
-                kikaku.setDatetime(rSet.getString("DATETIME"));
-                kikaku.setPlace(rSet.getString("PLACE"));
-                kikaku.setTeacher(rSet.getString("TEACHER"));
-                kikaku.setDescription(rSet.getString("DESCRIPTION"));
-                kikaku.setStatus(rSet.getString("STATUS"));
-                kikaku.setOwnerId(rSet.getString("OWNER_ID"));
-                list.add(kikaku);
+                list.add(createKikakuFromResultSet(rSet));
             }
         } catch (Exception e) {
             throw e;
@@ -91,12 +82,21 @@ public class KikakuDao extends Dao {
 
     public boolean save(Kikaku kikaku) throws Exception {
         Connection connection = null;
+        PreparedStatement checkStatement = null;
         PreparedStatement statement = null;
+        ResultSet rSet = null;
         int count = 0;
 
         try {
             connection = getConnection();
-            Kikaku old = get(kikaku.getId());
+
+            // 同じコネクションで既存確認
+            checkStatement = connection.prepareStatement("SELECT ID FROM PUBLIC.KIKAKU WHERE ID = ?");
+            checkStatement.setString(1, kikaku.getId());
+            rSet = checkStatement.executeQuery();
+            boolean exists = rSet.next();
+            rSet.close();
+            checkStatement.close();
 
             // DATETIMEをTimestamp型に変換
             Timestamp datetimeValue = null;
@@ -104,12 +104,12 @@ public class KikakuDao extends Dao {
                 try {
                     datetimeValue = Timestamp.valueOf(kikaku.getDatetime());
                 } catch (Exception e) {
-                    // フォーマットが合わない場合はnull
                     datetimeValue = null;
                 }
             }
 
-            if (old == null) {
+            if (!exists) {
+                // INSERT
                 statement = connection.prepareStatement(
                     "INSERT INTO PUBLIC.KIKAKU(ID, TITLE, DATETIME, PLACE, TEACHER, DESCRIPTION, STATUS, OWNER_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
                 statement.setString(1, kikaku.getId());
@@ -125,6 +125,7 @@ public class KikakuDao extends Dao {
                 statement.setString(7, kikaku.getStatus());
                 statement.setString(8, kikaku.getOwnerId());
             } else {
+                // UPDATE
                 statement = connection.prepareStatement(
                     "UPDATE PUBLIC.KIKAKU SET TITLE = ?, DATETIME = ?, PLACE = ?, TEACHER = ?, DESCRIPTION = ?, STATUS = ? WHERE ID = ?");
                 statement.setString(1, kikaku.getTitle());
@@ -140,7 +141,10 @@ public class KikakuDao extends Dao {
                 statement.setString(7, kikaku.getId());
             }
             count = statement.executeUpdate();
+
         } catch (Exception e) {
+            System.out.println("KikakuDao.save() Exception: " + e.getMessage());
+            e.printStackTrace();
             throw e;
         } finally {
             if (statement != null) {

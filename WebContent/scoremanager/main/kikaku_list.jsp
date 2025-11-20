@@ -9,8 +9,6 @@
         return;
     }
 %>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<c:import url="/common/header.jsp"></c:import>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -48,18 +46,85 @@
     .header-nav a:hover::after {
       width: 100%;
     }
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .tag-green {
+      background: #d4edda;
+      color: #155724;
+    }
+    .tag-blue {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    .tag-orange {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 4px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s ease;
+      font-size: 13px;
+    }
+    .btn-ghost {
+      background: #fff;
+      color: #1d8cf8;
+      border: 1px solid #1d8cf8;
+    }
+    .btn-ghost:hover {
+      background: #f0f7ff;
+    }
+    .btn-primary {
+      background: #1d8cf8;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #0078d7;
+    }
   </style>
 </head>
 <body>
-
-
-
+<div class="top-bar">
+  <div class="nav-left">
+    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
+      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
+    </a>
+    <div class="system-title">文化祭システム</div>
+    <!-- ヘッダーナビゲーション -->
+    <div class="header-nav">
+      <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
+      <% if ("admin".equals(user.getRole())) { %>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/users_list.jsp">ユーザー一覧</a>
+      <% } %>
+      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
+      <% if ("admin".equals(user.getRole())) { %>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
+      <% } %>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span style="margin-right: 16px;">ようこそ <%= user.getName() %> さん</span>
+    <a href="javascript:void(0)" onclick="openLogoutModal()" style="color:#1d8cf8; cursor:pointer; text-decoration:none; font-weight:600;">ログアウト</a>
+  </div>
+</div>
 
 <div class="wrap">
   <div class="title">企画一覧</div>
+
   <% if (request.getAttribute("error") != null) { %>
     <div class="err"><%= request.getAttribute("error") %></div>
   <% } %>
+
   <div class="table-wrap">
     <table>
       <thead>
@@ -93,15 +158,18 @@
               </c:choose>
             </td>
             <td>
-              <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail.jsp?id=${kikaku.id}">開く</a>
+              <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail?id=${kikaku.id}">開く</a>
             </td>
           </tr>
         </c:forEach>
       </tbody>
     </table>
   </div>
+
   <div style="margin-top:12px;">
-    <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画の新規提出</a>
+    <% if ("student".equals(user.getRole()) || "admin".equals(user.getRole())) { %>
+      <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画の新規提出</a>
+    <% } %>
   </div>
 </div>
 
@@ -117,7 +185,6 @@
 </div>
 
 <script>
-
   function openLogoutModal() {
     document.getElementById('logoutModal').style.display = 'flex';
   }
@@ -129,7 +196,7 @@
   function confirmLogout() {
     location.href = '<%= request.getContextPath() %>/scoremanager/main/logout';
   }
-
 </script>
 </body>
 </html>
+

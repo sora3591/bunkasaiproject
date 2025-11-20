@@ -34,7 +34,7 @@
 requireAuth(); fillWelcome(); renderNav(); renderNav();
 function render(){
   const data = getMaps();
-  rows.innerHTML = data.map(m=>`
+  rows.innerHTML = data.map(m=>{
     <tr>
       <td>${m.id}</td>
       <td>${m.name}</td>

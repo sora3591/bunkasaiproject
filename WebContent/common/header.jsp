@@ -142,8 +142,8 @@
       <% } else { %>
         <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
         <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画提出</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list">アンケート</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list">校内図</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
       <% } %>
     </div>
 
