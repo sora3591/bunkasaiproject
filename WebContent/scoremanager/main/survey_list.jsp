@@ -5,26 +5,6 @@
 <%@ page import="dao.SurveyDao" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<%
-    // ★ 这里直接在 JSP 里面调用 Dao，从 H2 取出アンケート列表
-    List<Survey> surveys = null;
-    try {
-        SurveyDao dao = new SurveyDao();
-        surveys = dao.getAll();          // SELECT * FROM SURVEY ...
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    if (surveys == null) {
-        surveys = new java.util.ArrayList<Survey>();
-    }
-    request.setAttribute("surveys", surveys);
-
-    // 登录用户角色（管理者 / 学生），按你之前 session 里保存的 key 来改
-    String role = (String)session.getAttribute("userRole");
-    if (role == null) {
-        role = "student";   // 保险起见给个默认
-    }
-%>
 
 <!DOCTYPE html>
 <html lang="ja">
@@ -50,7 +30,7 @@
 
 <div class="wrap">
   <div class="title">アンケート一覧</div>
-  <div class="err">※ 管理者は作成/管理、学生は回答のみ</div>
+  <div class="err">※ 管理者：プレビュー／結果確認　学生：回答のみ</div>
 
   <div class="table-wrap">
     <table>
@@ -58,16 +38,14 @@
         <tr>
           <th>タイトル</th>
           <th>質問数</th>
-          <th style="width:180px;"></th>
+          <th style="width:260px;"></th>
         </tr>
       </thead>
       <tbody>
-        <!-- ★ 这里用 JSTL 把刚才 Dao 取出来的 surveys 显示出来 -->
         <c:forEach var="s" items="${surveys}">
           <tr>
             <td>
               ${s.title}
-              <!-- 这里先简单显示 proposalId，如果以后要显示企画名再改 -->
               <c:if test="${not empty s.proposalId}">
                 <span class="tag tag-blue" style="margin-left:6px;">
                   ${s.proposalId}
@@ -77,19 +55,29 @@
             <td>${s.questions.size()}</td>
             <td>
               <c:choose>
+
                 <c:when test="${role eq 'admin'}">
-                  <a class="btn btn-primary" href="survey_take.jsp?id=${s.id}">プレビュー</a>
-                  <a class="btn btn-ghost" href="survey_admin.jsp">新規作成</a>
+                  <!-- プレビュー：編集画面へ -->
+                  <a class="btn btn-ghost" href="survey_admin.jsp?id=${s.id}">
+                    プレビュー
+                  </a>
+                  <!-- 結果を見る：あとで学生回答表示用に実装 -->
+                  <a class="btn btn-primary" href="survey_result.jsp?id=${s.id}">
+                    結果を見る
+                  </a>
                 </c:when>
+
+
                 <c:otherwise>
-                  <a class="btn btn-primary" href="survey_take.jsp?id=${s.id}">実施</a>
+                  <a class="btn btn-primary" href="survey_take.jsp?id=${s.id}">
+                    実施
+                  </a>
                 </c:otherwise>
               </c:choose>
             </td>
           </tr>
         </c:forEach>
 
-        <!-- 没有数据时的提示 -->
         <c:if test="${empty surveys}">
           <tr>
             <td colspan="3" style="text-align:center; color:#666;">
@@ -115,10 +103,10 @@
 
 <script src="app.js"></script>
 <script>
-  // 导航/ログアウト这些 JS 你原来在用的就保留
-  requireAuth();
-  fillWelcome();
-  renderNav();
+  // 管理者も学生もこの一覧は見れるので requireAuth のみ
+  try { requireAuth && requireAuth(); } catch(e) {}
+  try { fillWelcome && fillWelcome(); } catch(e) {}
+  try { renderNav && renderNav(); } catch(e) {}
 </script>
 </body>
 </html>

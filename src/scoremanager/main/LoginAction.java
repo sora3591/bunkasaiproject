@@ -32,7 +32,17 @@ public class LoginAction extends HttpServlet {
             if (user != null) {
                 // ログイン成功
                 HttpSession session = request.getSession();
+
+                // ① 原来只有这一行
                 session.setAttribute("user", user);
+
+                // ② ★★ 新增：把用户ID单独塞进 session，问卷用这个 ★★
+                //    User bean 里大概率是 getId()，如果是 getUserId() 就改成那个
+                session.setAttribute("userId", user.getId());
+
+                // （如果你有角色信息的话，也可以在这里顺便塞：session.setAttribute("userRole", user.getRole());）
+
+                // ③ 跳转到主页
                 response.sendRedirect(request.getContextPath() + "/scoremanager/main/index.jsp");
             } else {
                 // ログイン失敗
