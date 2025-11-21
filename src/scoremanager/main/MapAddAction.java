@@ -1,4 +1,3 @@
-
 package scoremanager.main;
 
 import java.io.IOException;
@@ -123,4 +122,3 @@ public class MapAddAction extends HttpServlet {
         }
     }
 }
-

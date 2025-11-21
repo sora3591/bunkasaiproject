@@ -9,6 +9,8 @@
         return;
     }
 %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:import url="/common/header.jsp"></c:import>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -16,107 +18,10 @@
   <title>企画一覧</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="<%= request.getContextPath() %>/css/styles.css" />
-  <style>
-    .header-nav {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .header-nav a {
-      color: #222;
-      text-decoration: none;
-      transition: color 0.2s ease;
-      position: relative;
-    }
-    .header-nav a::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: -4px;
-      width: 0;
-      height: 2px;
-      background: #1d8cf8;
-      transition: width 0.22s ease;
-    }
-    .header-nav a:hover {
-      color: #1d8cf8;
-    }
-    .header-nav a:hover::after {
-      width: 100%;
-    }
-    .tag {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .tag-green {
-      background: #d4edda;
-      color: #155724;
-    }
-    .tag-blue {
-      background: #d1ecf1;
-      color: #0c5460;
-    }
-    .tag-orange {
-      background: #fff3cd;
-      color: #856404;
-    }
-    .btn {
-      padding: 8px 14px;
-      border-radius: 4px;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: all 0.2s ease;
-      font-size: 13px;
-    }
-    .btn-ghost {
-      background: #fff;
-      color: #1d8cf8;
-      border: 1px solid #1d8cf8;
-    }
-    .btn-ghost:hover {
-      background: #f0f7ff;
-    }
-    .btn-primary {
-      background: #1d8cf8;
-      color: #fff;
-    }
-    .btn-primary:hover {
-      background: #0078d7;
-    }
-  </style>
+
 </head>
 <body>
-<div class="top-bar">
-  <div class="nav-left">
-    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
-      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
-    </a>
-    <div class="system-title">文化祭システム</div>
-    <!-- ヘッダーナビゲーション -->
-    <div class="header-nav">
-      <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
-      <% if ("admin".equals(user.getRole())) { %>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/users_list.jsp">ユーザー一覧</a>
-      <% } %>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
-      <% if ("admin".equals(user.getRole())) { %>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
-      <% } %>
-    </div>
-  </div>
-  <div class="nav-right">
-    <span style="margin-right: 16px;">ようこそ <%= user.getName() %> さん</span>
-    <a href="javascript:void(0)" onclick="openLogoutModal()" style="color:#1d8cf8; cursor:pointer; text-decoration:none; font-weight:600;">ログアウト</a>
-  </div>
-</div>
+
 
 <div class="wrap">
   <div class="title">企画一覧</div>

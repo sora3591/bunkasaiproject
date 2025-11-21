@@ -3,9 +3,8 @@
 <%@ page import="java.util.List" %>
 <%@ page import="bean.Survey" %>
 <%@ page import="dao.SurveyDao" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:import url="/common/header.jsp"></c:import>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -16,17 +15,7 @@
 </head>
 <body>
 
-<!-- ===== トップバー ===== -->
-<div class="top-bar">
-  <div class="nav-left">
-    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
-      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
-    </a>
-    <div class="system-title">文化祭システム</div>
-  </div>
-  <div class="nav-center" id="navCenter"></div>
-  <div class="nav-right">ようこそ</div>
-</div>
+
 
 <div class="wrap">
   <div class="title">アンケート一覧</div>

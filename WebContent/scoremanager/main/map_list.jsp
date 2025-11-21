@@ -177,8 +177,8 @@
     <% } else { %>
       <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
       <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画提出</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list">アンケート</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/map_list">校内図</a>
+      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
+      <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
     <% } %>
   </div>
   <div class="right">
@@ -245,21 +245,9 @@
 </div>
 
 <script>
-
-requireAuth(); fillWelcome(); renderNav(); renderNav();
-function render(){
-  const data = getMaps();
-  rows.innerHTML = data.map(m=>{
-    <tr>
-      <td>${m.id}</td>
-      <td>${m.name}</td>
-      <td>${m.img ? `<img src="${m.img}" style="width:120px; height:80px; object-fit:cover; border-radius:8px;">` : '<span class="err">画像なし</span>'}</td>
-    </tr>`).join('');
-
 // ログアウト関連
 function openLogout(){
   document.getElementById('logoutModal').style.display='flex';
-
 }
 function closeLogout(){
   document.getElementById('logoutModal').style.display='none';
