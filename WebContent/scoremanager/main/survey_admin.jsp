@@ -7,14 +7,15 @@
 <%
     request.setCharacterEncoding("UTF-8");
 
-    // エラーメッセージ用
     String errMsg = null;
+    Survey editingSurvey = null;   // 編集対象（idパラメータがあればここに入る）
 
-    // ★ このページへの POST を受け取ってDBに保存する
+    // ---- POST：保存処理 ----
     if ("POST".equalsIgnoreCase(request.getMethod())) {
 
+        String surveyId   = request.getParameter("surveyId");  // hidden
         String proposalId = request.getParameter("proposal");
-        String title = request.getParameter("title");
+        String title      = request.getParameter("title");
 
         String[] types  = request.getParameterValues("qType");
         String[] labels = request.getParameterValues("qLabel");
@@ -22,10 +23,12 @@
         if (title != null && title.trim().length() > 0 &&
             types != null && labels != null && types.length == labels.length) {
 
-            // ---- Survey オブジェクト作成 ----
             Survey s = new Survey();
-            // IDはとりあえず時間ベースでユニークにする
-            String surveyId = "S" + System.currentTimeMillis();
+
+            // ★ 新規 or 編集判定：hiddenのsurveyIdが空なら新規
+            if (surveyId == null || surveyId.isEmpty()) {
+                surveyId = "S" + System.currentTimeMillis();
+            }
             s.setId(surveyId);
             s.setTitle(title.trim());
             s.setProposalId(proposalId);
@@ -48,9 +51,9 @@
 
             try {
                 SurveyDao dao = new SurveyDao();
-                dao.save(s);   // SurveyDaoのsaveがSurveyQuestionも保存してくれる
+                dao.save(s);   // INSERT or UPDATE + 質問再登録
 
-                // 保存成功 → 一覧へリダイレクト
+                // 保存成功 → 一覧へ
                 response.sendRedirect("survey_list.jsp");
                 return;
 
@@ -61,6 +64,22 @@
         } else {
             errMsg = "タイトルと質問を正しく入力してください。";
         }
+
+    } else {
+        // ---- GET：idがあれば編集モードで既存アンケートを取得 ----
+        String id = request.getParameter("id");
+        if (id != null && !id.isEmpty()) {
+            try {
+                SurveyDao dao = new SurveyDao();
+                editingSurvey = dao.get(id);
+                if (editingSurvey == null) {
+                    errMsg = "指定されたアンケートが見つかりません。";
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                errMsg = "アンケートの取得中にエラーが発生しました。";
+            }
+        }
     }
 %>
 
@@ -68,7 +87,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>アンケート作成（管理者）</title>
+<title>アンケート作成／編集（管理者）</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="styles.css" />
 </head>
@@ -87,24 +106,40 @@
 </div>
 
 <div class="wrap">
-  <div class="title">アンケート作成（管理者）</div>
+  <div class="title">
+    <% if (editingSurvey != null) { %>
+      アンケート編集（管理者）
+    <% } else { %>
+      アンケート作成（管理者）
+    <% } %>
+  </div>
 
   <% if (errMsg != null) { %>
     <div class="err"><%= errMsg %></div>
   <% } %>
 
-  <!-- ★★★ form開始：自分自身にPOSTする ★★★ -->
+
   <form method="post" action="survey_admin.jsp" id="surveyForm">
+
+    <!-- 編集時に使うアンケートID -->
+    <input type="hidden" name="surveyId"
+           value="<%= (editingSurvey != null ? editingSurvey.getId() : "") %>">
 
     <div class="card">
 
-      <!-- 対象企画 -->
+      <!-- 対象企画（现在简单放着，将来再连 proposals 表） -->
       <label class="label">対象企画</label>
-      <select id="proposal" name="proposal" class="select"></select>
+      <select id="proposal" name="proposal" class="select">
+        <option value="">企画を選択してください</option>
+        <!-- TODO: 以后从企画テーブル生成 option -->
+      </select>
 
       <!-- アンケートタイトル -->
       <label class="label" style="margin-top:8px;">アンケートタイトル</label>
-      <input id="title" name="title" class="input" placeholder="例）来場者アンケート">
+      <input id="title" name="title" class="input"
+             placeholder="例）来場者アンケート"
+             value="<%= (editingSurvey != null && editingSurvey.getTitle() != null)
+                        ? editingSurvey.getTitle() : "" %>">
 
       <!-- 質問群 -->
       <div class="subtitle" style="margin-top:12px;">質問</div>
@@ -121,14 +156,14 @@
 
       <!-- 保存・戻る -->
       <div style="margin-top:14px;">
-        <!-- beforeSubmit で入力チェックを行う -->
+        <!-- beforeSubmit で入力チェック -->
         <button type="submit" class="btn btn-primary" onclick="return beforeSubmit()">保存</button>
-        <a class="btn btn-ghost" href="survey_list.jsp">戻る</a>
+        <a class="btn btn-ghost" href="survey_list.jsp">一覧に戻る</a>
       </div>
     </div>
 
   </form>
-  <!-- ★★★ form終了 ★★★ -->
+
 </div>
 
 <!-- ログアウトモーダル -->
@@ -145,20 +180,39 @@
 <script src="app.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // ===== ナビ・ログイン関連（app.js にあれば実行、なければ無視） =====
+  // ===== ナビ・ログイン関連 =====
   try { requireAuth && requireAuth(); } catch(e) {}
   try { fillWelcome && fillWelcome(); } catch(e) {}
   try { renderNav && renderNav(); } catch(e) {}
 
-  // ===== 対象企画セレクト（とりあえずプレースホルダ。あとでDBと連携） =====
+  // ===== 対象企画セレクト（现在先不连DB） =====
   if (typeof proposal !== 'undefined') {
-    if (!proposal.innerHTML.trim()) {
-      proposal.innerHTML = '<option value="">企画を選択してください</option>';
-    }
+    // 如果将来要根据 editingSurvey.getProposalId() 设定默认值，可以在这里处理
   }
 
   // ===== 質問リスト管理用 =====
-  let list = [];  // {id, type, label} の配列
+  let list = [];
+
+  // ★ サーバーから既存質問を埋め込む（編集モードのときだけ）
+  <%
+    if (editingSurvey != null &&
+        editingSurvey.getQuestions() != null &&
+        !editingSurvey.getQuestions().isEmpty()) {
+
+      List<SurveyQuestion> qList = editingSurvey.getQuestions();
+  %>
+    list = [
+      <% for (int i = 0; i < qList.size(); i++) {
+           SurveyQuestion q = qList.get(i);
+           String lbl = q.getLabel();
+           if (lbl == null) lbl = "";
+           // 简单处理一下防止 JS 字符串崩掉
+           lbl = lbl.replace("\\", "\\\\").replace("\"", "\\\"").replace("\r", "").replace("\n", "");
+      %>
+        { id: "<%= q.getId() %>", type: "<%= q.getType() %>", label: "<%= lbl %>" }<%= (i < qList.size()-1 ? "," : "") %>
+      <% } %>
+    ];
+  <% } %>
 
   function redraw() {
     if (!list.length) {
@@ -204,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (q) q.label = val;
   }
 
-  // ===== フォーム送信前チェック =====
   function beforeSubmit() {
     if (!title.value.trim()) {
       alert('タイトルを入力してください');
@@ -215,24 +268,23 @@ document.addEventListener('DOMContentLoaded', function() {
       return false;
     }
 
-    // どんなデータが送られるか確認
     console.log('送信予定データ', {
+      surveyId: document.querySelector('input[name="surveyId"]').value,
       proposalId: proposal.value,
       title: title.value.trim(),
       questions: list
     });
 
-    return true; // ここで true を返すと submit 続行
+    return true;
   }
 
-  // ===== グローバル公開（HTMLのonclick から呼べるように） =====
   window.addQ         = addQ;
   window.delQ         = delQ;
   window.chgType      = chgType;
   window.chgLabel     = chgLabel;
   window.beforeSubmit = beforeSubmit;
 
-  // 初期表示
+  // 初期表示（编辑模式时会显示原问题，新规时显示「+ボタンで追加してください」）
   redraw();
 });
 </script>
