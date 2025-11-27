@@ -1,3 +1,4 @@
+
 package scoremanager.main;
 
 import java.io.IOException;

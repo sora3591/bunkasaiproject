@@ -85,4 +85,20 @@ public class MapDao extends Dao {
         }
         return count > 0;
     }
+
+
+public boolean delete(String id) throws Exception {
+    Connection connection = getConnection();
+    PreparedStatement statement = null;
+    int count = 0;
+    try {
+        statement = connection.prepareStatement("DELETE FROM map WHERE id = ?");
+        statement.setString(1, id);
+        count = statement.executeUpdate();
+    } finally {
+        if (statement != null) statement.close();
+        if (connection != null) connection.close();
+    }
+    return count > 0;
+}
 }

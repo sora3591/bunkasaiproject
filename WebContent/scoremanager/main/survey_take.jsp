@@ -1,22 +1,26 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ page isELIgnored="true" %>
+ <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page isELIgnored="false" %>
 <%@ page import="java.util.*" %>
 <%@ page import="bean.Survey, bean.SurveyQuestion, bean.SurveyAnswer" %>
+<%@ page import="bean.User" %>
 <%@ page import="dao.SurveyDao, dao.SurveyAnswerDao" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <%
     request.setCharacterEncoding("UTF-8");
 
-    String surveyId = request.getParameter("id");   // GET 時の ?id=...
+    // ★ ログインチェック（他画面と同じパターン）
+    User user = (User)session.getAttribute("user");
+    if (user == null) {
+        response.sendRedirect(request.getContextPath() + "/scoremanager/main/login.jsp");
+        return;
+    }
+    // ★ 回答者 ID はログインユーザーの ID を使う
+    String userId = user.getId();
+
+    String surveyId = request.getParameter("id");   // GET 時 ?id=...
     String err = null;
     Survey survey = null;
-
-    // ★ 这里按你的系统实际情况改：session 里的用户ID名
-    // 例如如果你是 loginId，就写 "loginId"
-    String userId = (String)session.getAttribute("userId");
-    if (userId == null) {
-        userId = "guest";   // 没登录的情况先作为 guest 处理（最好本来就 requireAuth）
-    }
 
     // ---- POST: 回答送信 ----
     if ("POST".equalsIgnoreCase(request.getMethod())) {
@@ -36,7 +40,6 @@
 
                 int idx = 1;
                 for (SurveyQuestion q : qs) {
-
                     String qId = q.getId();
                     String paramName = "q_" + qId;
                     String val = request.getParameter(paramName);
@@ -54,8 +57,8 @@
                     idx++;
                 }
 
-                // ★ 保存OK → 感谢页面 ★
-                response.sendRedirect("thanks.jsp");
+                // ★ 保存OK → 感谢页面（Servlet 経由じゃないなら JSP 直指定でOK）
+                response.sendRedirect(request.getContextPath() + "/scoremanager/main/thanks.jsp");
                 return;
             }
         } catch (Exception e) {
@@ -78,27 +81,18 @@
     }
 %>
 
+<!-- 共通ヘッダー（ナビ・ロゴ） -->
+<c:import url="/common/header.jsp"></c:import>
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <title>アンケート実施</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="<%= request.getContextPath() %>/css/styles.css" />
 </head>
 <body>
-
-<!-- ===== トップバー ===== -->
-<div class="top-bar">
-  <div class="nav-left">
-    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp">
-      <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="icon-home" alt="home">
-    </a>
-    <div class="system-title">文化祭システム</div>
-  </div>
-  <div class="nav-center" id="navCenter"></div>
-  <div class="nav-right">ようこそ</div>
-</div>
 
 <div class="wrap">
   <% if (err != null) { %>
@@ -106,7 +100,9 @@
     <div class="title">アンケート実施</div>
     <div class="err"><%= err %></div>
     <div style="margin-top:12px;">
-      <a href="survey_list.jsp" class="btn btn-ghost">アンケート一覧に戻る</a>
+      <!-- ★ 一覧へ戻るのリンクは Servlet 経由 -->
+      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list"
+         class="btn btn-ghost">アンケート一覧に戻る</a>
     </div>
 
   <% } else if (survey != null) { %>
@@ -116,8 +112,8 @@
       アンケートID：<%= survey.getId() %>
     </div>
 
-    <!-- ★ 回答用フォーム（POST） -->
-    <form method="post" action="survey_take.jsp">
+    <!-- ★ 回答用フォーム：action を空にして「この JSP 自身」に POST -->
+    <form method="post">
       <!-- アンケートID を hidden で送る -->
       <input type="hidden" name="surveyId" value="<%= survey.getId() %>">
 
@@ -136,10 +132,8 @@
 
           <% if ("number".equals(t)) { %>
             <input type="number" name="<%= name %>" class="input">
-
           <% } else if ("textarea".equals(t)) { %>
             <textarea name="<%= name %>" rows="3" class="input"></textarea>
-
           <% } else { %> <!-- text or その他 -->
             <input type="text" name="<%= name %>" class="input">
           <% } %>
@@ -149,14 +143,15 @@
 
       <div style="margin-top:16px;">
         <button type="submit" class="btn btn-primary">送信</button>
-        <a href="survey_list.jsp" class="btn btn-ghost">一覧に戻る</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list"
+           class="btn btn-ghost">一覧に戻る</a>
       </div>
     </form>
 
   <% } %>
 </div>
 
-<!-- ログアウトモーダル -->
+<!-- ログアウトモーダル（必要なら） -->
 <div class="modal-bg" id="logoutModal">
   <div class="modal">
     <div>ログアウトしますか？</div>
@@ -167,7 +162,7 @@
   </div>
 </div>
 
-<script src="app.js"></script>
+<script src="<%= request.getContextPath() %>/scoremanager/main/app.js"></script>
 <script>
   try { requireAuth && requireAuth(); } catch(e) {}
   try { fillWelcome && fillWelcome(); } catch(e) {}

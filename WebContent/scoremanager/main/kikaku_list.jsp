@@ -18,48 +18,18 @@
   <title>企画一覧</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="<%= request.getContextPath() %>/css/styles.css" />
-  <style>
-    .header-nav {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .header-nav a {
-      color: #222;
-      text-decoration: none;
-      transition: color 0.2s ease;
-      position: relative;
-    }
-    .header-nav a::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: -4px;
-      width: 0;
-      height: 2px;
-      background: #1d8cf8;
-      transition: width 0.22s ease;
-    }
-    .header-nav a:hover {
-      color: #1d8cf8;
-    }
-    .header-nav a:hover::after {
-      width: 100%;
-    }
-  </style>
+
 </head>
 <body>
 
 
-
-
 <div class="wrap">
   <div class="title">企画一覧</div>
+
   <% if (request.getAttribute("error") != null) { %>
     <div class="err"><%= request.getAttribute("error") %></div>
   <% } %>
+
   <div class="table-wrap">
     <table>
       <thead>
@@ -93,15 +63,18 @@
               </c:choose>
             </td>
             <td>
-              <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail.jsp?id=${kikaku.id}">開く</a>
+              <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail?id=${kikaku.id}">開く</a>
             </td>
           </tr>
         </c:forEach>
       </tbody>
     </table>
   </div>
+
   <div style="margin-top:12px;">
-    <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画の新規提出</a>
+    <% if ("student".equals(user.getRole()) || "admin".equals(user.getRole())) { %>
+      <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画の新規提出</a>
+    <% } %>
   </div>
 </div>
 
@@ -117,7 +90,6 @@
 </div>
 
 <script>
-
   function openLogoutModal() {
     document.getElementById('logoutModal').style.display = 'flex';
   }
@@ -129,7 +101,7 @@
   function confirmLogout() {
     location.href = '<%= request.getContextPath() %>/scoremanager/main/logout';
   }
-
 </script>
 </body>
 </html>
+
