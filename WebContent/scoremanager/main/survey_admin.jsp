@@ -2,85 +2,20 @@
 <%@ page isELIgnored="true" %>
 <%@ page import="java.util.*" %>
 <%@ page import="bean.Survey, bean.SurveyQuestion" %>
+<%@ page import="bean.Kikaku" %>      <!-- 企画用 Bean -->
 <%@ page import="dao.SurveyDao" %>
 
 <%
     request.setCharacterEncoding("UTF-8");
 
-    String errMsg = null;
-    Survey editingSurvey = null;   // 編集対象（idパラメータがあればここに入る）
+    // Action( Servlet ) からもらう値
+    String errMsg = (String)request.getAttribute("errMsg");
+    Survey editingSurvey = (Survey)request.getAttribute("editingSurvey");
 
-    // ---- POST：保存処理 ----
-    if ("POST".equalsIgnoreCase(request.getMethod())) {
-
-        String surveyId   = request.getParameter("surveyId");  // hidden
-        String proposalId = request.getParameter("proposal");
-        String title      = request.getParameter("title");
-
-        String[] types  = request.getParameterValues("qType");
-        String[] labels = request.getParameterValues("qLabel");
-
-        if (title != null && title.trim().length() > 0 &&
-            types != null && labels != null && types.length == labels.length) {
-
-            Survey s = new Survey();
-
-            // ★ 新規 or 編集判定：hiddenのsurveyIdが空なら新規
-            if (surveyId == null || surveyId.isEmpty()) {
-                surveyId = "S" + System.currentTimeMillis();
-            }
-            s.setId(surveyId);
-            s.setTitle(title.trim());
-            s.setProposalId(proposalId);
-
-            List<SurveyQuestion> qList = new ArrayList<>();
-
-            for (int i = 0; i < types.length; i++) {
-                if (labels[i] == null || labels[i].trim().isEmpty()) {
-                    continue;   // 質問文が空ならスキップ
-                }
-                SurveyQuestion q = new SurveyQuestion();
-                q.setId("Q" + surveyId + "_" + (i + 1));   // 適当なID
-                q.setSurveyId(surveyId);
-                q.setType(types[i]);
-                q.setLabel(labels[i].trim());
-                qList.add(q);
-            }
-
-            s.setQuestions(qList);
-
-            try {
-                SurveyDao dao = new SurveyDao();
-                dao.save(s);   // INSERT or UPDATE + 質問再登録
-
-                // 保存成功 → 一覧へ
-                response.sendRedirect("survey_list.jsp");
-                return;
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                errMsg = "アンケートの保存に失敗しました。";
-            }
-        } else {
-            errMsg = "タイトルと質問を正しく入力してください。";
-        }
-
-    } else {
-        // ---- GET：idがあれば編集モードで既存アンケートを取得 ----
-        String id = request.getParameter("id");
-        if (id != null && !id.isEmpty()) {
-            try {
-                SurveyDao dao = new SurveyDao();
-                editingSurvey = dao.get(id);
-                if (editingSurvey == null) {
-                    errMsg = "指定されたアンケートが見つかりません。";
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                errMsg = "アンケートの取得中にエラーが発生しました。";
-            }
-        }
-    }
+    // 承認済み企画一覧
+    @SuppressWarnings("unchecked")
+    List<Kikaku> approvedProposals =
+        (List<Kikaku>)request.getAttribute("approvedProposals");
 %>
 
 <!DOCTYPE html>
@@ -118,8 +53,10 @@
     <div class="err"><%= errMsg %></div>
   <% } %>
 
-
-  <form method="post" action="survey_admin.jsp" id="surveyForm">
+  <!-- ★ Action の URL を指定 -->
+  <form method="post"
+        action="<%= request.getContextPath() %>/scoremanager/main/survey_admin"
+        id="surveyForm">
 
     <!-- 編集時に使うアンケートID -->
     <input type="hidden" name="surveyId"
@@ -127,11 +64,37 @@
 
     <div class="card">
 
-      <!-- 対象企画（现在简单放着，将来再连 proposals 表） -->
+      <!-- 対象企画：承認済み企画だけを DB から取得して表示 -->
       <label class="label">対象企画</label>
+
+      <%
+        // どれを選択状態にするか（編集時は既存の proposalId）
+        String selectedProposalId = null;
+        if (editingSurvey != null && editingSurvey.getProposalId() != null) {
+            selectedProposalId = editingSurvey.getProposalId();
+        } else {
+            // バリデーションエラーで戻ってきたとき用
+            String reqP = request.getParameter("proposal");
+            if (reqP != null && !reqP.isEmpty()) {
+                selectedProposalId = reqP;
+            }
+        }
+      %>
+
       <select id="proposal" name="proposal" class="select">
         <option value="">企画を選択してください</option>
-        <!-- TODO: 以后从企画テーブル生成 option -->
+
+        <% if (approvedProposals != null) {
+             for (Kikaku k : approvedProposals) {
+                 String pid = k.getId();      // 企画ID
+                 String pname = k.getTitle(); // 企画タイトル
+        %>
+          <option value="<%= pid %>"
+            <%= (pid != null && pid.equals(selectedProposalId)) ? "selected" : "" %>>
+            <%= pname %>
+          </option>
+        <%   }
+           } %>
       </select>
 
       <!-- アンケートタイトル -->
@@ -139,7 +102,8 @@
       <input id="title" name="title" class="input"
              placeholder="例）来場者アンケート"
              value="<%= (editingSurvey != null && editingSurvey.getTitle() != null)
-                        ? editingSurvey.getTitle() : "" %>">
+                        ? editingSurvey.getTitle()
+                        : (request.getParameter("title") != null ? request.getParameter("title") : "") %>">
 
       <!-- 質問群 -->
       <div class="subtitle" style="margin-top:12px;">質問</div>
@@ -158,7 +122,8 @@
       <div style="margin-top:14px;">
         <!-- beforeSubmit で入力チェック -->
         <button type="submit" class="btn btn-primary" onclick="return beforeSubmit()">保存</button>
-        <a class="btn btn-ghost" href="survey_list.jsp">一覧に戻る</a>
+        <a class="btn btn-ghost"
+           href="<%= request.getContextPath() %>/scoremanager/main/survey_list">一覧に戻る</a>
       </div>
     </div>
 
@@ -185,11 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
   try { fillWelcome && fillWelcome(); } catch(e) {}
   try { renderNav && renderNav(); } catch(e) {}
 
-  // ===== 対象企画セレクト（现在先不连DB） =====
-  if (typeof proposal !== 'undefined') {
-    // 如果将来要根据 editingSurvey.getProposalId() 设定默认值，可以在这里处理
-  }
-
   // ===== 質問リスト管理用 =====
   let list = [];
 
@@ -206,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
            SurveyQuestion q = qList.get(i);
            String lbl = q.getLabel();
            if (lbl == null) lbl = "";
-           // 简单处理一下防止 JS 字符串崩掉
+           // JS 文字列用にエスケープ
            lbl = lbl.replace("\\", "\\\\").replace("\"", "\\\"").replace("\r", "").replace("\n", "");
       %>
         { id: "<%= q.getId() %>", type: "<%= q.getType() %>", label: "<%= lbl %>" }<%= (i < qList.size()-1 ? "," : "") %>
@@ -268,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return false;
     }
 
+    // デバッグ用ログ
     console.log('送信予定データ', {
       surveyId: document.querySelector('input[name="surveyId"]').value,
       proposalId: proposal.value,
@@ -284,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
   window.chgLabel     = chgLabel;
   window.beforeSubmit = beforeSubmit;
 
-  // 初期表示（编辑模式时会显示原问题，新规时显示「+ボタンで追加してください」）
+  // 初期表示
   redraw();
 });
 </script>
