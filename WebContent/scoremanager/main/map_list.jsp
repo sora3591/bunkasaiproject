@@ -32,6 +32,8 @@
         }
     }
 %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:import url="/common/header.jsp"></c:import>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -57,42 +59,6 @@
     font-family: "Noto Sans JP", system-ui, -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Yu Gothic","Meiryo",sans-serif;
     display:flex; flex-direction:column; align-items:center;
   }
-  .topbar{
-    width:100%; max-width:1200px; height:78px;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 26px;
-    background:rgba(255,255,255,0.72);
-    backdrop-filter:blur(10px);
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.35);
-    box-shadow:var(--shadow);
-    margin-top:10px;
-    transition:box-shadow .3s ease;
-  }
-  .topbar:hover{ box-shadow:0 10px 24px rgba(0,0,0,.12); }
-  .left{ display:flex; align-items:center; gap:14px; }
-  .home{ width:50px; height:50px; display:block; transition:transform .18s ease; }
-  .home:hover{ transform:scale(1.06); }
-  .title{
-    font-size:24px; font-weight:800; letter-spacing:.03em;
-    background:var(--grad);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-  }
-  .center{ display:flex; align-items:center; gap:28px; font-weight:700; }
-  .nav a{
-    position:relative; text-decoration:none; color:#222; font-size:16px; padding:6px 4px;
-    transition:color .2s ease;
-  }
-  .nav a::after{
-    content:''; position:absolute; left:0; bottom:-4px; width:0; height:3px;
-    background:var(--primary); border-radius:2px; transition:width .22s ease;
-  }
-  .nav a:hover{ color:var(--primary); }
-  .nav a:hover::after{ width:100%; }
-  .right{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-weight:700; }
-  .logout{ color:var(--primary); text-decoration:none; cursor:pointer; }
-  .logout:hover{ text-decoration:underline; }
   .wrap{ width:100%; max-width:1200px; padding:28px 24px 56px; }
   .page-title{
     font-size:28px; font-weight:800; margin-bottom:24px;
@@ -162,30 +128,6 @@
 </head>
 <body>
 
-<div class="topbar">
-  <div class="left">
-    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp"><img class="home" src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Home"></a>
-    <div class="title">文化祭システム</div>
-  </div>
-  <div class="center nav">
-    <% if ("admin".equals(role)) { %>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/users_list.jsp">ユーザー一覧</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_admin.jsp">アンケート作成</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/map_list">校内図</a>
-    <% } else { %>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画提出</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
-    <% } %>
-  </div>
-  <div class="right">
-    <div><%= welcome %></div>
-    <a class="logout" href="javascript:void(0)" onclick="openLogout()">ログアウト</a>
-  </div>
-</div>
 
 <div class="wrap">
   <div class="page-title">校内図一覧</div>
