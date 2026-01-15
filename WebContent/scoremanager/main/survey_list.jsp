@@ -47,7 +47,7 @@
 
                 <c:when test="${role eq 'admin'}">
                   <!-- プレビュー：編集画面へ -->
-                  <a class="btn btn-ghost" href="survey_admin.jsp?id=${s.id}">
+                  <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/survey_admin?id=${s.id}">
                     プレビュー
                   </a>
                   <!-- 結果を見る：あとで学生回答表示用に実装 -->
