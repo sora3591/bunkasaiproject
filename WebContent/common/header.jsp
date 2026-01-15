@@ -142,6 +142,7 @@
       <% } else { %>
         <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
         <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画提出</a>
+        <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_revise_list">修正待ち</a>
         <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
         <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
       <% } %>
@@ -149,14 +150,9 @@
 
     <div class="right">
       <div><%= welcome %></div>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/logout.jsp">ログアウト</a>
+      <a href="javascript:void(0);" onclick="openLogout()">ログアウト</a>
     </div>
   </div>
-
-
-
-
-
 
   <div class="modal-bg" id="logoutModal">
     <div class="modal">

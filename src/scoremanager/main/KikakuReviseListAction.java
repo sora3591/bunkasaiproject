@@ -14,8 +14,8 @@ import bean.Kikaku;
 import bean.User;
 import dao.KikakuDao;
 
-@WebServlet("/scoremanager/main/kikaku_list")
-public class KikakuListAction extends HttpServlet {
+@WebServlet("/scoremanager/main/kikaku_revise_list")
+public class KikakuReviseListAction extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -32,7 +32,7 @@ public class KikakuListAction extends HttpServlet {
             }
 
             User user = (User) session.getAttribute("user");
-            System.out.println("=== KikakuListAction START ===");
+            System.out.println("=== KikakuReviseListAction START ===");
             System.out.println("User: " + user.getId() + ", Role: " + user.getRole());
 
             // 企画一覧を取得
@@ -54,19 +54,21 @@ public class KikakuListAction extends HttpServlet {
                 kikakuList = new java.util.ArrayList<>();
             }
 
-            // リクエストに設定（ここが重要！）
+            // リクエストに設定
             request.setAttribute("kikakuList", kikakuList);
-            System.out.println("=== KikakuListAction END ===");
+            System.out.println("=== KikakuReviseListAction END ===");
 
             // JSPにフォワード
-            request.getRequestDispatcher("/scoremanager/main/kikaku_list.jsp").forward(request, response);
+            request.getRequestDispatcher("/scoremanager/main/kikaku_revise_list.jsp")
+                .forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("KikakuListAction Exception: " + e.getMessage());
+            System.out.println("KikakuReviseListAction Exception: " + e.getMessage());
             request.setAttribute("error", "企画一覧の取得に失敗しました: " + e.getMessage());
             try {
-                request.getRequestDispatcher("/scoremanager/main/kikaku_list.jsp").forward(request, response);
+                request.getRequestDispatcher("/scoremanager/main/kikaku_revise_list.jsp")
+                    .forward(request, response);
             } catch (ServletException | IOException e1) {
                 e1.printStackTrace();
             }
