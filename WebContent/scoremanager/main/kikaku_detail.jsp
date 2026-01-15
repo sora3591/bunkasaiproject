@@ -83,6 +83,20 @@
       background: #fff3cd;
       color: #856404;
     }
+    .comment-box {
+      background: #f9f9f9;
+      border-left: 4px solid #1d8cf8;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 8px 0;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .comment-empty {
+      color: #999;
+      font-style: italic;
+    }
     textarea {
       width: 100%;
       min-height: 100px;
@@ -146,7 +160,6 @@
 </head>
 <body>
 
-
 <div class="wrap">
   <div class="title">企画詳細：<%= kikaku.getTitle() %></div>
 
@@ -189,7 +202,7 @@
       </div>
     </div>
 
-    <!-- 右側：承認パネル（管理者のみ） -->
+    <!-- 右側：ステータスとコメント -->
     <div class="card">
       <div class="subtitle">ステータス</div>
       <div style="margin-bottom: 16px;">
@@ -208,27 +221,36 @@
       </div>
 
       <% if ("admin".equals(user.getRole())) { %>
-        <div class="subtitle">承認パネル</div>
-       <form method="post" action="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail">
+        <!-- 管理者向け：ステータス変更パネル -->
+        <div class="subtitle">ステータス変更</div>
+        <form method="post" action="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail">
           <input type="hidden" name="id" value="<%= kikaku.getId() %>">
-
           <div class="button-group">
-            <button type="button" class="btn btn-success" onclick="setStatus(this.form, '承認完了')">承認</button>
-            <button type="button" class="btn btn-warning" onclick="setStatus(this.form, '修正依頼')">修正依頼</button>
-            <button type="button" class="btn btn-danger" onclick="setStatus(this.form, '却下')">却下</button>
+            <button type="submit" name="status" value="承認完了" class="btn btn-success">承認</button>
+            <button type="submit" name="status" value="修正依頼" class="btn btn-warning">修正依頼</button>
+            <button type="submit" name="status" value="却下" class="btn btn-danger">却下</button>
           </div>
+        </form>
 
-          <div class="subtitle" style="margin-top: 16px;">管理者コメント</div>
-          <textarea name="adminComment" placeholder="コメントを入力..."></textarea>
-
+        <div class="subtitle" style="margin-top: 16px;">管理者コメント</div>
+        <form method="post" action="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail">
+          <input type="hidden" name="id" value="<%= kikaku.getId() %>">
+          <textarea name="adminComment" placeholder="コメントを入力..."><%= kikaku.getAdminComment() != null ? kikaku.getAdminComment() : "" %></textarea>
           <div class="button-group" style="margin-top: 12px;">
             <button type="submit" class="btn btn-primary">保存</button>
             <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">戻る</a>
           </div>
         </form>
       <% } else { %>
-        <p style="color: #666; font-size: 14px;">管理者のみステータスを変更できます</p>
-        <div style="margin-top: 16px;">
+        <!-- 学生向け：コメント表示 -->
+        <div class="subtitle">管理者からのコメント</div>
+        <% if (kikaku.getAdminComment() != null && !kikaku.getAdminComment().isEmpty()) { %>
+          <div class="comment-box"><%= kikaku.getAdminComment() %></div>
+        <% } else { %>
+          <div class="comment-box comment-empty">コメントがありません</div>
+        <% } %>
+
+        <div style="margin-top: 20px;">
           <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">戻る</a>
         </div>
       <% } %>
@@ -258,15 +280,6 @@
 
   function confirmLogout() {
     location.href = '<%= request.getContextPath() %>/scoremanager/main/logout';
-  }
-
-  function setStatus(form, status) {
-    const statusInput = document.createElement('input');
-    statusInput.type = 'hidden';
-    statusInput.name = 'status';
-    statusInput.value = status;
-    form.appendChild(statusInput);
-    form.submit();
   }
 </script>
 </body>

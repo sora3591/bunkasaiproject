@@ -1,13 +1,18 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page isELIgnored="false" %>
+<%@ page import="java.util.List" %>
+<%@ page import="bean.Kikaku" %>
+<%@ page import="dao.KikakuDao" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
   // セッション上のロール判定
   String role = (String)session.getAttribute("userRole");
+  bean.User user = null;
   if (role == null) {
     // ロール情報がない場合、セッションからユーザー情報を確認
     Object userObj = session.getAttribute("user");
     if (userObj != null) {
-      bean.User user = (bean.User) userObj;
+      user = (bean.User) userObj;
       role = user.getRole();
       session.setAttribute("userRole", role);
     } else {
@@ -19,6 +24,15 @@
 
   String welcome = "管理者さん、ようこそ";
   if ("student".equals(role)) welcome = "学生さん、ようこそ";
+
+  // 企画一覧を取得
+  List<Kikaku> kikakuList = new java.util.ArrayList<>();
+  try {
+    KikakuDao dao = new KikakuDao();
+    kikakuList = dao.getAll();
+  } catch (Exception e) {
+    e.printStackTrace();
+  }
 %>
 <!DOCTYPE html>
 <html lang="ja">
@@ -100,15 +114,15 @@
     display:flex; align-items:center; justify-content:center;
     box-shadow:var(--shadow); color:#2c2f36; font-weight:800; letter-spacing:.02em;
   }
-  .thumbs{ display:flex; gap:32px; margin-top:22px; }
+  .thumbs{ display:flex; gap:32px; margin-top:22px; flex-wrap: wrap; justify-content: center; }
   .thumb{ width:28vw; max-width:420px; }
 
-  .imgbox{ position:relative; overflow:hidden; border-radius:999px; width:100%; }
+  .imgbox{ position:relative; overflow:hidden; border-radius:999px; width:100%; height: 200px; }
   .imgbox img{ width:100%; height:100%; object-fit:cover; display:block; }
   .imgbox[data-alt]::after{
     content:attr(data-alt);
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    color:#2c2f36; font-weight:800; letter-spacing:.02em;
+    color:#2c2f36; font-weight:800; letter-spacing:.02em; background: #eef1f6;
   }
 
   .sns{ display:flex; gap:28px; align-items:center; justify-content:center; margin:26px 0 6px; }
@@ -122,6 +136,76 @@
   .actions{ display:flex; gap:12px; justify-content:center; margin-top:12px; }
   .btn{ padding:10px 18px; border-radius:10px; border:1px solid #d0d7e2; background:#fff; cursor:pointer; font-weight:700; }
   .btn.primary{ background:#19a3ff; color:#fff; border-color:#19a3ff; }
+
+  .content-section { margin-top: 40px; }
+  .section-title { font-size: 22px; font-weight: 700; margin: 20px 0; color: #222; }
+
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead {
+    background: #f5f5f5;
+    font-weight: 700;
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  tbody tr:hover {
+    background: #f9f9f9;
+  }
+  .tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag-green {
+    background: #d4edda;
+    color: #155724;
+  }
+  .tag-blue {
+    background: #d1ecf1;
+    color: #0c5460;
+  }
+  .tag-orange {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .btn-ghost {
+    background: #fff;
+    color: #1d8cf8;
+    border: 1px solid #1d8cf8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+  }
+  .btn-ghost:hover {
+    background: #f0f7ff;
+  }
+  .empty-message {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+  }
+
+  @media (max-width: 768px) {
+    .center { flex-direction: column; gap: 12px; }
+    .thumbs { flex-direction: column; }
+    .thumb { width: 90vw; max-width: 420px; }
+  }
 </style>
 </head>
 <body>
@@ -149,39 +233,71 @@
 
     <div class="right">
       <div><%= welcome %></div>
-      <a href="<%= request.getContextPath() %>/scoremanager/main/logout.jsp">ログアウト</a>
+      <a class="logout" onclick="openLogout()" style="cursor:pointer;">ログアウト</a>
     </div>
   </div>
 
   <div class="wrap">
-    <div class="hero">
-      <div class="imgbox" data-alt="main">
-        <img src="<%= request.getContextPath() %>/scoremanager/main/images/main.jpg" alt="main" onerror="this.style.display='none'">
+
+
+
+
+    <!-- 企画一覧セクション -->
+    <div class="content-section">
+      <h2 class="section-title">📋 最近の企画</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>タイトル</th>
+              <th>日時</th>
+              <th>場所</th>
+              <th>担任名</th>
+              <th>ステータス</th>
+              <th style="width:100px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (kikakuList.isEmpty()) { %>
+              <tr>
+                <td colspan="6" class="empty-message">企画がありません</td>
+              </tr>
+            <% } else { %>
+              <% for (Kikaku k : kikakuList) { %>
+                <tr>
+                  <td><%= k.getTitle() %></td>
+                  <td><%= k.getDatetime() != null ? k.getDatetime() : "" %></td>
+                  <td><%= k.getPlace() != null ? k.getPlace() : "" %></td>
+                  <td><%= k.getTeacher() != null ? k.getTeacher() : "" %></td>
+                  <td>
+                    <%
+                      String status = k.getStatus();
+                      String tagClass = "tag-orange";
+                      if ("承認完了".equals(status)) {
+                        tagClass = "tag-green";
+                      } else if ("承認中".equals(status)) {
+                        tagClass = "tag-blue";
+                      }
+                    %>
+                    <span class="tag <%= tagClass %>"><%= status %></span>
+                  </td>
+                  <td>
+                    <a class="btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail?id=<%= k.getId() %>">開く</a>
+                  </td>
+                </tr>
+              <% } %>
+            <% } %>
+          </tbody>
+        </table>
       </div>
+
     </div>
 
-    <div class="thumbs">
-      <div class="thumb">
-        <div class="imgbox" data-alt="e1">
-          <img src="images/20241002_071933.JPG" alt="e1" onerror="this.style.display='none'">
-        </div>
-      </div>
-      <div class="thumb">
-        <div class="imgbox" data-alt="e2">
-          <img src="images/e2.jpg" alt="e2" onerror="this.style.display='none'">
-        </div>
-      </div>
-    </div>
 
-    <div class="sns">
-      <img src="https://cdn-icons-png.flaticon.com/512/3670/3670051.png" alt="whatsapp">
-      <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="facebook">
-      <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="twitter">
-      <img src="https://cdn-icons-png.flaticon.com/512/3670/3670147.png" alt="youtube">
     </div>
 
     <div class="addr">〒101-8551 東京都千代田区神田三崎町2-4-1</div>
-  </div>
+
 
   <div class="modal-bg" id="logoutModal">
     <div class="modal">

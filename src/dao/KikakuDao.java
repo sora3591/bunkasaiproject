@@ -207,7 +207,7 @@ public class KikakuDao extends Dao {
 
                 statement = connection.prepareStatement(
 
-                    "INSERT INTO PUBLIC.KIKAKU(ID, TITLE, DATETIME, PLACE, TEACHER, DESCRIPTION, STATUS, OWNER_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    "INSERT INTO PUBLIC.KIKAKU(ID, TITLE, DATETIME, PLACE, TEACHER, DESCRIPTION, STATUS, OWNER_ID, ADMIN_COMMENT) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                 statement.setString(1, kikaku.getId());
 
@@ -233,13 +233,18 @@ public class KikakuDao extends Dao {
 
                 statement.setString(8, kikaku.getOwnerId());
 
+                statement.setString(9, kikaku.getAdminComment());
+
+
+
             } else {
 
                 // UPDATE
 
                 statement = connection.prepareStatement(
 
-                    "UPDATE PUBLIC.KIKAKU SET TITLE = ?, DATETIME = ?, PLACE = ?, TEACHER = ?, DESCRIPTION = ?, STATUS = ? WHERE ID = ?");
+                    "UPDATE PUBLIC.KIKAKU SET TITLE = ?, DATETIME = ?, PLACE = ?, TEACHER = ?, DESCRIPTION = ?, STATUS = ?, ADMIN_COMMENT = ? WHERE ID = ?");
+
 
                 statement.setString(1, kikaku.getTitle());
 
@@ -261,7 +266,10 @@ public class KikakuDao extends Dao {
 
                 statement.setString(6, kikaku.getStatus());
 
-                statement.setString(7, kikaku.getId());
+                statement.setString(7, kikaku.getAdminComment());
+                statement.setString(8, kikaku.getId());
+
+
 
             }
 
@@ -270,6 +278,66 @@ public class KikakuDao extends Dao {
         } catch (Exception e) {
 
             System.out.println("KikakuDao.save() Exception: " + e.getMessage());
+
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException sqle) {
+                    // ignore
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException sqle) {
+                    // ignore
+                }
+            }
+        }
+        return count > 0;
+    }
+
+    public boolean update(Kikaku kikaku) throws Exception {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        int count = 0;
+
+        try {
+            connection = getConnection();
+
+            // DATETIMEをTimestamp型に変換
+            Timestamp datetimeValue = null;
+            if (kikaku.getDatetime() != null && !kikaku.getDatetime().isEmpty()) {
+                try {
+                    datetimeValue = Timestamp.valueOf(kikaku.getDatetime());
+                } catch (Exception e) {
+                    datetimeValue = null;
+                }
+            }
+
+            // UPDATE
+            statement = connection.prepareStatement(
+                "UPDATE PUBLIC.KIKAKU SET TITLE = ?, DATETIME = ?, PLACE = ?, TEACHER = ?, DESCRIPTION = ?, STATUS = ?, ADMIN_COMMENT = ? WHERE ID = ?");
+            statement.setString(1, kikaku.getTitle());
+            if (datetimeValue != null) {
+                statement.setTimestamp(2, datetimeValue);
+            } else {
+                statement.setNull(2, java.sql.Types.TIMESTAMP);
+            }
+            statement.setString(3, kikaku.getPlace());
+            statement.setString(4, kikaku.getTeacher());
+            statement.setString(5, kikaku.getDescription());
+            statement.setString(6, kikaku.getStatus());
+            statement.setString(7, kikaku.getAdminComment());
+            statement.setString(8, kikaku.getId());
+
+            count = statement.executeUpdate();
+
+        } catch (Exception e) {
+            System.out.println("KikakuDao.update() Exception: " + e.getMessage());
 
             e.printStackTrace();
 
@@ -388,6 +456,16 @@ public class KikakuDao extends Dao {
         kikaku.setStatus(rSet.getString("STATUS"));
 
         kikaku.setOwnerId(rSet.getString("OWNER_ID"));
+
+
+        // ADMIN_COMMENTカラムが存在する場合のみ取得
+        try {
+            kikaku.setAdminComment(rSet.getString("ADMIN_COMMENT"));
+        } catch (SQLException e) {
+            // カラムが存在しない場合はスキップ
+            kikaku.setAdminComment(null);
+        }
+
 
         return kikaku;
 

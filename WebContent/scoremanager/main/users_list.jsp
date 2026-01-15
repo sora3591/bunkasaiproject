@@ -17,41 +17,6 @@
     return;
   }
 
-  // 削除処理（POSTリクエスト時）
-  if ("POST".equals(request.getMethod())) {
-    String action = request.getParameter("action");
-    System.out.println("=== POST Request: action=" + action + " ===");
-    if ("delete".equals(action)) {
-      String userId = request.getParameter("delete_id");
-      System.out.println("=== Deleting User: " + userId + " ===");
-      try {
-        UserDao dao = new UserDao();
-        boolean result = dao.delete(userId);
-        System.out.println("=== Delete Result: " + result + " ===");
-        if (result) {
-          response.setStatus(HttpServletResponse.SC_OK);
-          response.setContentType("application/json;charset=UTF-8");
-          response.getWriter().write("{\"success\":true}");
-          System.out.println("=== User Successfully Deleted: " + userId + " ===");
-          return;
-        } else {
-          response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-          response.setContentType("application/json;charset=UTF-8");
-          response.getWriter().write("{\"error\":\"ユーザーが見つかりません\"}");
-          System.out.println("=== User Not Found: " + userId + " ===");
-          return;
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-        System.out.println("=== Delete Exception: " + e.getMessage() + " ===");
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"error\":\"削除に失敗しました: " + e.getMessage() + "\"}");
-        return;
-      }
-    }
-  }
-
   // ユーザー一覧を取得
   List<User> users = new java.util.ArrayList<>();
   String errorMsg = null;
@@ -113,7 +78,7 @@
               <td><%= u.getEmail() != null ? u.getEmail() : "" %></td>
               <td>
                 <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/edit_user?id=<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>">編集</a>
-                <button class="btn btn-danger" onclick="delUser('<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>')">削除</button>
+                <a class="btn btn-danger" href="<%= request.getContextPath() %>/scoremanager/main/delete_user.jsp?id=<%= java.net.URLEncoder.encode(u.getId(), "UTF-8") %>">削除</a>
               </td>
             </tr>
           <% } %>
@@ -138,44 +103,6 @@
 
 <script src="<%= request.getContextPath() %>/app.js"></script>
 <script>
-  function delUser(encodedId) {
-    if (!confirm('削除しますか？')) return;
-
-    console.log('Deleting user:', encodedId);
-
-    const formData = new FormData();
-    formData.append('action', 'delete');
-    formData.append('delete_id', encodedId);
-
-    fetch('<%= request.getContextPath() %>/scoremanager/main/users_list.jsp', {
-      method: 'POST',
-      body: formData
-    }).then(response => {
-      console.log('Response status:', response.status);
-      return response.text().then(text => {
-        console.log('Response text:', text);
-        return { status: response.status, text: text };
-      });
-    }).then(data => {
-      try {
-        const json = JSON.parse(data.text);
-        if (data.status === 200 && json.success) {
-          console.log('Delete successful');
-          location.reload();
-        } else {
-          console.error('Delete failed:', json.error || 'Unknown error');
-          alert('削除に失敗しました: ' + (json.error || 'Unknown error'));
-        }
-      } catch (e) {
-        console.error('JSON parse error:', e);
-        alert('削除に失敗しました: ' + e.message);
-      }
-    }).catch(error => {
-      console.error('Fetch error:', error);
-      alert('削除に失敗しました: ' + error.message);
-    });
-  }
-
   function openLogout() {
     document.getElementById('logoutModal').style.display = 'flex';
   }

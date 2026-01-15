@@ -83,18 +83,16 @@ public class KikakuDetailAction extends HttpServlet {
 
             User currentUser = (User) session.getAttribute("user");
 
-            // 管理者のみステータス更新可能
+            // 管理者のみ処理可能
             if (!"admin".equals(currentUser.getRole())) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.sendRedirect(request.getContextPath() + "/scoremanager/main/kikaku_list.jsp");
                 return;
             }
 
             String id = request.getParameter("id");
-            String status = request.getParameter("status");
-            String adminComment = request.getParameter("adminComment");
 
-            if (id == null || id.isEmpty() || status == null || status.isEmpty()) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            if (id == null || id.isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/scoremanager/main/kikaku_list.jsp");
                 return;
             }
 
@@ -103,26 +101,45 @@ public class KikakuDetailAction extends HttpServlet {
             Kikaku kikaku = dao.get(id);
 
             if (kikaku == null) {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.sendRedirect(request.getContextPath() + "/scoremanager/main/kikaku_list.jsp");
                 return;
             }
 
-            // ステータスを更新
-            kikaku.setStatus(status);
-            // adminCommentフィールドがあれば設定（Beanに追加が必要）
+            // ステータス変更の処理（statusパラメータが存在する場合）
+            String status = request.getParameter("status");
+            if (status != null && !status.isEmpty()) {
+                kikaku.setStatus(status);
+                dao.update(kikaku);
+                System.out.println("=== Status Updated: id=" + id + ", status=" + status + " ===");
 
-            // 保存
-            boolean saved = dao.save(kikaku);
-
-            if (saved) {
+                // ステータス変更後は同じページにリダイレクト
                 response.sendRedirect(request.getContextPath() + "/scoremanager/main/kikaku_detail?id=" + id);
-            } else {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
             }
+
+            // コメント保存の処理（adminCommentパラメータが存在する場合）
+            String adminComment = request.getParameter("adminComment");
+            if (adminComment != null) {
+                kikaku.setAdminComment(adminComment);
+                dao.update(kikaku);
+                System.out.println("=== Comment Saved: id=" + id + " ===");
+
+                // コメント保存成功後は一覧にリダイレクト
+                response.sendRedirect(request.getContextPath() + "/scoremanager/main/kikaku_list");
+                return;
+            }
+
+            // パラメータがない場合は詳細ページにリダイレクト
+            response.sendRedirect(request.getContextPath() + "/scoremanager/main/kikaku_detail?id=" + id);
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            try {
+                request.setAttribute("error", "処理に失敗しました: " + e.getMessage());
+                request.getRequestDispatcher("/scoremanager/main/kikaku_list.jsp").forward(request, response);
+            } catch (ServletException | IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 }
