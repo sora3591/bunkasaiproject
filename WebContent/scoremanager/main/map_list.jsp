@@ -208,7 +208,9 @@
           <tr>
             <td colspan="3" style="text-align:center; color:#6b7280; padding:40px;">校内図データがありません</td>
           </tr>
+
         <% } else { %>
+         <% if ("admin".equals(role)) { %>
           <% for (Map map : mapList) { %>
             <tr>
               <td style="font-size:13px; color:#6b7280;"><%= map.getId() %></td>
@@ -220,8 +222,29 @@
                   <span class="err">画像なし</span>
                 <% } %>
               </td>
+              <td>
+             	 <a class="btn btn-danger" href="<%= request.getContextPath() %>/scoremanager/main/delete_map.jsp?id=<%= java.net.URLEncoder.encode(map.getId(), "UTF-8") %>">削除</a>
+             </td>
             </tr>
-          <% } %>
+          <%} %>
+         <% } else { %>
+          <% for (Map map : mapList) { %>
+            <tr>
+              <td style="font-size:13px; color:#6b7280;"><%= map.getId() %></td>
+              <td style="font-weight:600;"><%= map.getName() %></td>
+              <td>
+                <% if (map.getImg() != null && !map.getImg().isEmpty()) { %>
+                  <img src="<%= map.getImg() %>" style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <% } else { %>
+                  <span class="err">画像なし</span>
+                <% } %>
+              </td>
+
+            </tr>
+          <%} %>
+
+
+         <% } %>
         <% } %>
       </tbody>
     </table>
