@@ -124,6 +124,22 @@
   .modal-btn.primary{
     background:#19a3ff; color:#fff; border-color:#19a3ff;
   }
+  /* 画像モーダル用スタイル */
+  .image-modal-bg{
+    position:fixed; inset:0; background:rgba(0,0,0,.85);
+    display:none; align-items:center; justify-content:center; z-index:100;
+    cursor:pointer;
+  }
+  .image-modal-content{
+    max-width:90vw; max-height:90vh;
+    border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .clickable-img{
+    cursor:pointer; transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .clickable-img:hover{
+    transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  }
 </style>
 </head>
 <body>
@@ -159,7 +175,10 @@
               <td style="font-weight:600;"><%= map.getName() %></td>
               <td>
                 <% if (map.getImg() != null && !map.getImg().isEmpty()) { %>
-                  <img src="<%= map.getImg() %>" style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                  <img src="<%= map.getImg() %>"
+                       class="clickable-img"
+                       onclick="openImageModal('<%= map.getImg() %>')"
+                       style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                 <% } else { %>
                   <span class="err">画像なし</span>
                 <% } %>
@@ -176,7 +195,10 @@
               <td style="font-weight:600;"><%= map.getName() %></td>
               <td>
                 <% if (map.getImg() != null && !map.getImg().isEmpty()) { %>
-                  <img src="<%= map.getImg() %>" style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                  <img src="<%= map.getImg() %>"
+                       class="clickable-img"
+                       onclick="openImageModal('<%= map.getImg() %>')"
+                       style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                 <% } else { %>
                   <span class="err">画像なし</span>
                 <% } %>
@@ -209,6 +231,10 @@
   </div>
 </div>
 
+<div class="image-modal-bg" id="imageModal" onclick="closeImageModal()">
+  <img id="modalImage" class="image-modal-content" src="" alt="校内図">
+</div>
+
 <script>
 // ログアウト関連
 function openLogout(){
@@ -219,6 +245,14 @@ function closeLogout(){
 }
 function confirmLogout(){
   location.href='<%= request.getContextPath() %>/scoremanager/main/logout';
+}
+// 画像モーダル関連
+function openImageModal(imageSrc){
+  document.getElementById('modalImage').src = imageSrc;
+  document.getElementById('imageModal').style.display = 'flex';
+}
+function closeImageModal(){
+  document.getElementById('imageModal').style.display = 'none';
 }
 </script>
 
