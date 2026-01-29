@@ -21,6 +21,8 @@
     String welcome = "管理者さん、ようこそ";
     String error = (String) request.getAttribute("error");
 %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:import url="/common/header.jsp"></c:import>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -142,23 +144,6 @@
 </head>
 <body>
 
-<div class="topbar">
-  <div class="left">
-    <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp"><img class="home" src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Home"></a>
-    <div class="title">文化祭システム</div>
-  </div>
-  <div class="center nav">
-    <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
-    <a href="<%= request.getContextPath() %>/scoremanager/main/users_list.jsp">ユーザー一覧</a>
-    <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
-    <a href="<%= request.getContextPath() %>/scoremanager/main/survey_admin.jsp">アンケート作成</a>
-    <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
-  </div>
-  <div class="right">
-    <div><%= welcome %></div>
-    <a class="logout" href="javascript:void(0)" onclick="openLogout()">ログアウト</a>
-  </div>
-</div>
 
 <div class="wrap">
   <div class="page-title">校内図追加</div>

@@ -60,42 +60,6 @@
     font-family: "Noto Sans JP", system-ui, -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Yu Gothic","Meiryo",sans-serif;
     display:flex; flex-direction:column; align-items:center;
   }
-  .topbar{
-    width:100%; max-width:1200px; height:78px;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 26px;
-    background:rgba(255,255,255,0.72);
-    backdrop-filter:blur(10px);
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.35);
-    box-shadow:var(--shadow);
-    margin-top:10px;
-    transition:box-shadow .3s ease;
-  }
-  .topbar:hover{ box-shadow:0 10px 24px rgba(0,0,0,.12); }
-  .left{ display:flex; align-items:center; gap:14px; }
-  .home{ width:50px; height:50px; display:block; transition:transform .18s ease; }
-  .home:hover{ transform:scale(1.06); }
-  .title{
-    font-size:24px; font-weight:800; letter-spacing:.03em;
-    background:var(--grad);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-  }
-  .center{ display:flex; align-items:center; gap:28px; font-weight:700; }
-  .nav a{
-    position:relative; text-decoration:none; color:#222; font-size:16px; padding:6px 4px;
-    transition:color .2s ease;
-  }
-  .nav a::after{
-    content:''; position:absolute; left:0; bottom:-4px; width:0; height:3px;
-    background:var(--primary); border-radius:2px; transition:width .22s ease;
-  }
-  .nav a:hover{ color:var(--primary); }
-  .nav a:hover::after{ width:100%; }
-  .right{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; font-weight:700; }
-  .logout{ color:var(--primary); text-decoration:none; cursor:pointer; }
-  .logout:hover{ text-decoration:underline; }
   .wrap{ width:100%; max-width:1200px; padding:28px 24px 56px; }
   .page-title{
     font-size:28px; font-weight:800; margin-bottom:24px;
@@ -161,6 +125,22 @@
   .modal-btn.primary{
     background:#19a3ff; color:#fff; border-color:#19a3ff;
   }
+  /* 画像モーダル用スタイル */
+  .image-modal-bg{
+    position:fixed; inset:0; background:rgba(0,0,0,.85);
+    display:none; align-items:center; justify-content:center; z-index:100;
+    cursor:pointer;
+  }
+  .image-modal-content{
+    max-width:90vw; max-height:90vh;
+    border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .clickable-img{
+    cursor:pointer; transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .clickable-img:hover{
+    transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.2);
+  }
 </style>
 </head>
 <body>
@@ -196,7 +176,10 @@
               <td style="font-weight:600;"><%= map.getName() %></td>
               <td>
                 <% if (map.getImg() != null && !map.getImg().isEmpty()) { %>
-                  <img src="<%= map.getImg() %>" style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                  <img src="<%= map.getImg() %>"
+                       class="clickable-img"
+                       onclick="openImageModal('<%= map.getImg() %>')"
+                       style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                 <% } else { %>
                   <span class="err">画像なし</span>
                 <% } %>
@@ -213,7 +196,10 @@
               <td style="font-weight:600;"><%= map.getName() %></td>
               <td>
                 <% if (map.getImg() != null && !map.getImg().isEmpty()) { %>
-                  <img src="<%= map.getImg() %>" style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                  <img src="<%= map.getImg() %>"
+                       class="clickable-img"
+                       onclick="openImageModal('<%= map.getImg() %>')"
+                       style="width:180px; height:120px; object-fit:cover; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                 <% } else { %>
                   <span class="err">画像なし</span>
                 <% } %>
@@ -246,6 +232,10 @@
   </div>
 </div>
 
+<div class="image-modal-bg" id="imageModal" onclick="closeImageModal()">
+  <img id="modalImage" class="image-modal-content" src="" alt="校内図">
+</div>
+
 <script>
 // ログアウト関連
 function openLogout(){
@@ -256,6 +246,14 @@ function closeLogout(){
 }
 function confirmLogout(){
   location.href='<%= request.getContextPath() %>/scoremanager/main/logout';
+}
+// 画像モーダル関連
+function openImageModal(imageSrc){
+  document.getElementById('modalImage').src = imageSrc;
+  document.getElementById('imageModal').style.display = 'flex';
+}
+function closeImageModal(){
+  document.getElementById('imageModal').style.display = 'none';
 }
 </script>
 

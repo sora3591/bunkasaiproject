@@ -76,7 +76,7 @@
   </div>
 
   <div style="margin-top:12px;">
-    <% if ("student".equals(user.getRole()) || "admin".equals(user.getRole())) { %>
+    <% if ("student".equals(user.getRole())) { %>
       <a class="btn btn-primary" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画の新規提出</a>
     <% } %>
   </div>
