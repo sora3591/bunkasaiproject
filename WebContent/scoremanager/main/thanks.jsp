@@ -50,7 +50,7 @@
       ご協力に感謝いたします。<br>
       自動的にアンケート一覧へ戻ります。
     </div>
-    <a href="survey_list.jsp" class="btn btn-primary">アンケート一覧に戻る</a>
+    <a href="survey_list" class="btn btn-primary">アンケート一覧に戻る</a>
   </div>
 </div>
 

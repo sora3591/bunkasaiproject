@@ -40,6 +40,7 @@
           <th>担任名</th>
           <th>ステータス</th>
           <th style="width:100px;"></th>
+          <th style="width:100px;"></th>
         </tr>
       </thead>
       <tbody>
@@ -64,6 +65,9 @@
             </td>
             <td>
               <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail?id=${kikaku.id}">開く</a>
+             </td>
+             <td>
+              <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/delete_kikaku.jsp?id=${kikaku.id}">削除</a>
             </td>
           </tr>
         </c:forEach>
