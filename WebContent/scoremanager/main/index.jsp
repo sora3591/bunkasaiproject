@@ -22,8 +22,7 @@
     }
   }
 
-  String welcome = "管理者さん、ようこそ";
-  if ("student".equals(role)) welcome = "学生さん、ようこそ";
+
 
   // 企画一覧を取得
   List<Kikaku> kikakuList = new java.util.ArrayList<>();
@@ -34,6 +33,8 @@
     e.printStackTrace();
   }
 %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<c:import url="/common/header.jsp"></c:import>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -210,32 +211,9 @@
 </head>
 <body>
 
-  <div class="topbar">
-    <div class="left">
-      <a href="<%= request.getContextPath() %>/scoremanager/main/index.jsp"><img class="home" src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="Home"></a>
-      <div class="title">文化祭システム</div>
-    </div>
 
-    <div class="center nav">
-      <% if ("admin".equals(role)) { %>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/users_list.jsp">ユーザー一覧</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list">アンケート</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_admin">アンケート作成</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
-      <% } else { %>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_list">企画一覧</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/kikaku_add">企画提出</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/survey_list.jsp">アンケート</a>
-        <a href="<%= request.getContextPath() %>/scoremanager/main/map_list.jsp">校内図</a>
-      <% } %>
-    </div>
 
-    <div class="right">
-      <div><%= welcome %></div>
-      <a class="logout" onclick="openLogout()" style="cursor:pointer;">ログアウト</a>
-    </div>
-  </div>
+
 
   <div class="wrap">
 
@@ -259,11 +237,13 @@
           </thead>
           <tbody>
             <% if (kikakuList.isEmpty()) { %>
+
               <tr>
                 <td colspan="6" class="empty-message">企画がありません</td>
               </tr>
             <% } else { %>
               <% for (Kikaku k : kikakuList) { %>
+               <% if ("承認完了".equals(k.getStatus())) { %>
                 <tr>
                   <td><%= k.getTitle() %></td>
                   <td><%= k.getDatetime() != null ? k.getDatetime() : "" %></td>
@@ -285,6 +265,7 @@
                     <a class="btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/kikaku_detail?id=<%= k.getId() %>">開く</a>
                   </td>
                 </tr>
+               <% } %>
               <% } %>
             <% } %>
           </tbody>

@@ -11,11 +11,7 @@
     return;
   }
 
-  User currentUser = (User) userObj;
-  if (!"admin".equals(currentUser.getRole())) {
-    response.sendRedirect(request.getContextPath() + "/scoremanager/main/index.jsp");
-    return;
-  }
+
 
   // リクエストメソッドチェック
   String method = request.getMethod();

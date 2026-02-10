@@ -39,22 +39,22 @@
       <div class="row">
         <div>
           <label class="label">日時</label>
-          <input class="input" type="datetime-local" name="datetime" placeholder="YYYY-MM-DD HH:mm">
+          <input class="input" type="datetime-local" name="datetime" placeholder="YYYY-MM-DD HH:mm" required>
         </div>
         <div>
           <label class="label">場所</label>
-          <input class="input" type="text" name="place">
+          <input class="input" type="text" name="place" required>
         </div>
       </div>
 
       <div>
         <label class="label">担任名</label>
-        <input class="input" type="text" name="teacher" placeholder="3年1組 佐藤 など">
+        <input class="input" type="text" name="teacher" placeholder="3年1組 佐藤 など" required>
       </div>
 
       <div>
         <label class="label">概要</label>
-        <textarea class="input" name="description" style="min-height:120px;"></textarea>
+        <textarea class="input" name="description" style="min-height:120px;" required></textarea>
       </div>
 
       <div style="margin-top:12px;">

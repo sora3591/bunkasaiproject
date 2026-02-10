@@ -35,10 +35,13 @@
           <input class="input" type="password" name="password" required>
         </div>
       </div>
+
+
       <div style="margin-top:12px;">
         <button class="btn btn-primary" type="submit">ログイン</button>
-        <a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/register.jsp">新規登録</a>
+        <!--<a class="btn btn-ghost" href="<%= request.getContextPath() %>/scoremanager/main/register.jsp">新規登録</a>-->
       </div>
+
     </form>
     <% if (request.getAttribute("error") != null) { %>
       <div class="err"><%= request.getAttribute("error") %></div>

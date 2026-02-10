@@ -87,7 +87,7 @@
 
     <div class="err"><%= errMsg %></div>
     <div style="margin-top:12px;">
-      <a class="btn btn-ghost" href="survey_list.jsp">アンケート一覧に戻る</a>
+      <a class="btn btn-ghost" href="survey_list">アンケート一覧に戻る</a>
     </div>
 
   <% } else if (survey != null) { %>
@@ -171,7 +171,7 @@
     %>
 
     <div style="margin-top:16px;">
-      <a class="btn btn-ghost" href="survey_list.jsp">アンケート一覧に戻る</a>
+      <a class="btn btn-ghost" href="survey_list">アンケート一覧に戻る</a>
     </div>
 
   <% } %>
